@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Confira seu e-mail | Troca de Livros</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+<body class="auth-page" data-page="confirme">
+
+  <main class="auth">
+    <section class="auth-card" aria-labelledby="titulo">
+      <p class="auth-step">Etapa 2 de 3 · Confirmar e-mail</p>
+
+      <div class="envelope" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+      </div>
+
+      <h1 id="titulo">Confira seu e-mail</h1>
+      <p class="auth-lead">Enviaremos um link de confirmação para<br><strong id="email-mostrado"></strong></p>
+      <p class="auth-lead auth-lead--small">Clique no link do e-mail para continuar. Se não encontrar, olhe também na caixa de spam.</p>
+
+      <!-- Aviso de teste: apague esta caixa quando o envio de e-mail for real. -->
+      <div class="test-box" role="note">
+        <strong>Modo de teste.</strong> O site ainda não tem servidor, então <strong>nenhum e-mail foi enviado de verdade</strong>.
+        Use o botão abaixo para fingir que você clicou no link.
+      </div>
+
+      <button class="btn-gradient" type="button" id="simular-link">Simular clique no link do e-mail</button>
+
+      <div class="auth-actions">
+        <button class="link-button" type="button" id="reenviar">Reenviar e-mail</button>
+        <a href="cadastro.html" id="outro-email">Usar outro e-mail</a>
+      </div>
+      <p class="auth-status" id="status" role="status"></p>
+    </section>
+
+    <a class="auth-back" href="index.html">&larr; Voltar ao início</a>
+  </main>
+
+  <script src="js/auth.js"></script>
+</body>
+</html>

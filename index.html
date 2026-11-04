@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Troca de Livros | Dê uma nova vida aos seus livros</title>
+  <meta name="description" content="Site feito por alunos para trocar e doar livros entre alunos e professores da escola.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Barra fixa do topo: logo à esquerda, botões à direita -->
+  <header class="topbar">
+    <div class="topbar__inner">
+      <a class="logo" href="#inicio" aria-label="Troca de Livros, ir para o início">
+        <!-- TODO: trocar o espaço abaixo pela logo, por exemplo:
+             <img src="img/logo.png" alt="Troca de Livros"> -->
+        <span class="logo__slot">LOGO</span>
+      </a>
+
+      <nav class="topbar__actions" aria-label="Conta">
+        <!-- TODO: ligar o Log In à página de login quando ela existir -->
+        <a class="btn btn--outline btn--sm" href="#">Log In</a>
+        <a class="btn btn--filled btn--sm" href="cadastro.html">Sign in</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- 1. Início -->
+    <section class="section section--tint hero" id="inicio">
+      <div class="container split">
+        <div class="split__text">
+          <p class="eyebrow">Troca de livros da nossa escola</p>
+          <h1>Dê uma nova vida aos seus livros</h1>
+          <p class="lead">Um site feito por alunos, para alunos e professores: cadastre os livros que você não usa mais e encontre os que você precisa.</p>
+          <div class="actions">
+            <a class="btn btn--filled" href="cadastro.html">Criar conta</a>
+            <a class="btn btn--outline" href="#como-funciona">Como funciona</a>
+          </div>
+        </div>
+
+        <!-- Espaço para imagem: para usar, apague os dois <span> e coloque
+             <img src="img/nome-da-imagem.jpg" alt="descrição da imagem"> -->
+        <figure class="img-slot img-slot--4x3" role="img" aria-label="Espaço reservado: imagem principal">
+          <span class="img-slot__title">Espaço para imagem</span>
+          <span class="img-slot__hint">Imagem principal (4:3)</span>
+        </figure>
+      </div>
+    </section>
+
+    <!-- 2. Quem somos -->
+    <section class="section" id="quem-somos">
+      <div class="container split split--reverse">
+        <figure class="img-slot img-slot--4x3" role="img" aria-label="Espaço reservado: foto da equipe">
+          <span class="img-slot__title">Espaço para imagem</span>
+          <span class="img-slot__hint">Foto da equipe (4:3)</span>
+        </figure>
+
+        <div class="split__text">
+          <p class="eyebrow">Quem somos</p>
+          <h2>Dois alunos, uma ideia simples</h2>
+          <p class="body">Somos alunos do 9º ano e acreditamos que um livro parado na estante é um livro desperdiçado. Criamos este site para conectar quem tem livros sobrando com quem está procurando, dentro da nossa própria escola.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Nosso objetivo -->
+    <section class="section section--dark" id="objetivo">
+      <div class="container">
+        <p class="eyebrow eyebrow--light">Nosso objetivo</p>
+        <h2 class="narrow">Mais leitura para todos, com menos gastos</h2>
+        <p class="body body--light narrow">Facilitar a troca e a doação de livros entre alunos e professores, para que cada livro seja usado por mais de uma pessoa e ninguém deixe de ler por falta de acesso.</p>
+      </div>
+    </section>
+
+    <!-- 4. Como funciona -->
+    <section class="section" id="como-funciona">
+      <div class="container">
+        <p class="eyebrow">Como funciona</p>
+        <h2>Quatro passos, sem complicação</h2>
+
+        <ol class="grid grid--4 steps">
+          <li class="card card--tint">
+            <span class="step-number" aria-hidden="true">1</span>
+            <h3>Crie sua conta</h3>
+            <p>Entre com o seu e-mail da escola.</p>
+          </li>
+          <li class="card card--tint">
+            <span class="step-number" aria-hidden="true">2</span>
+            <h3>Cadastre seu livro</h3>
+            <p>Digite o ISBN e o site preenche os dados. É só conferir.</p>
+          </li>
+          <li class="card card--tint">
+            <span class="step-number" aria-hidden="true">3</span>
+            <h3>Encontre e peça</h3>
+            <p>Busque por título, matéria ou série e peça a troca.</p>
+          </li>
+          <li class="card card--tint">
+            <span class="step-number" aria-hidden="true">4</span>
+            <h3>Troque na escola</h3>
+            <p>Combine o encontro com o dono do livro e pronto.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- 5. Por que usar -->
+    <section class="section section--tint" id="por-que-usar">
+      <div class="container">
+        <p class="eyebrow">Por que usar</p>
+        <h2>Bom para você e para a escola</h2>
+
+        <figure class="img-slot img-slot--banner" role="img" aria-label="Espaço reservado: imagem larga">
+          <span class="img-slot__title">Espaço para imagem</span>
+          <span class="img-slot__hint">Imagem larga (banner)</span>
+        </figure>
+
+        <ul class="grid grid--3 benefits">
+          <li class="card">
+            <h3>Economia</h3>
+            <p>Menos gastos com livros no começo do ano.</p>
+          </li>
+          <li class="card">
+            <h3>Sustentabilidade</h3>
+            <p>Livros reaproveitados evitam desperdício de papel.</p>
+          </li>
+          <li class="card">
+            <h3>Comunidade</h3>
+            <p>Conheça colegas que gostam dos mesmos livros.</p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 6. Últimas notícias
+         Para publicar uma notícia nova: copie um <li class="card card--news"> inteiro,
+         cole no começo da lista e troque data, título e resumo.
+         Os três abaixo são EXEMPLOS: troque pelos textos de vocês. -->
+    <section class="section" id="noticias">
+      <div class="container">
+        <p class="eyebrow">Últimas notícias</p>
+        <h2>Novidades e atualizações</h2>
+
+        <ul class="grid grid--3 news">
+          <li class="card card--news">
+            <figure class="img-slot img-slot--news" role="img" aria-label="Espaço reservado: imagem da notícia">
+              <span class="img-slot__title">Espaço para imagem</span>
+              <span class="img-slot__hint">Notícia (16:9)</span>
+            </figure>
+            <div class="news__body">
+              <p class="news__meta">
+                <time datetime="2026-10-30">30 de outubro de 2026</time>
+                <span class="news__tag">Exemplo</span>
+              </p>
+              <h3>O site está no ar</h3>
+              <p>Começamos a montar a página de apresentação. Em breve você poderá cadastrar e trocar livros.</p>
+              <a class="news__link" href="#">Ler mais</a>
+            </div>
+          </li>
+          <li class="card card--news">
+            <figure class="img-slot img-slot--news" role="img" aria-label="Espaço reservado: imagem da notícia">
+              <span class="img-slot__title">Espaço para imagem</span>
+              <span class="img-slot__hint">Notícia (16:9)</span>
+            </figure>
+            <div class="news__body">
+              <p class="news__meta">
+                <time datetime="2026-10-24">24 de outubro de 2026</time>
+                <span class="news__tag">Exemplo</span>
+              </p>
+              <h3>Cadastro de livros por ISBN</h3>
+              <p>Estamos testando como preencher os dados do livro automaticamente a partir do código de barras.</p>
+              <a class="news__link" href="#">Ler mais</a>
+            </div>
+          </li>
+          <li class="card card--news">
+            <figure class="img-slot img-slot--news" role="img" aria-label="Espaço reservado: imagem da notícia">
+              <span class="img-slot__title">Espaço para imagem</span>
+              <span class="img-slot__hint">Notícia (16:9)</span>
+            </figure>
+            <div class="news__body">
+              <p class="news__meta">
+                <time datetime="2026-10-17">17 de outubro de 2026</time>
+                <span class="news__tag">Exemplo</span>
+              </p>
+              <h3>Nossa ideia saiu do papel</h3>
+              <p>Definimos o caminho do usuário e as telas principais do site de troca de livros da escola.</p>
+              <a class="news__link" href="#">Ler mais</a>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 7. Chamada final -->
+    <section class="section section--cta" id="comece">
+      <div class="container cta">
+        <h2>Pronto para trocar o seu primeiro livro?</h2>
+        <a class="btn btn--light" href="cadastro.html">Criar conta</a>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="container footer__inner">
+      <p>Troca de Livros · projeto feito por alunos do 9º ano</p>
+      <p class="footer__links"><a href="#">Log In</a> <span aria-hidden="true">·</span> <a href="cadastro.html">Sign in</a></p>
+    </div>
+  </footer>
+
+</body>
+</html>

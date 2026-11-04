@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Informações adicionais | Troca de Livros</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+<body class="auth-page" data-page="informacoes">
+
+  <main class="auth">
+    <section class="auth-card" aria-labelledby="titulo" id="cartao">
+      <p class="auth-step">Etapa 3 de 3 · Informações</p>
+      <h1 id="titulo">Informações adicionais</h1>
+      <p class="auth-lead">Falta pouco! Conte um pouco sobre você.</p>
+
+      <form id="form-informacoes" novalidate>
+
+        <div class="field">
+          <label for="nome">Nome completo</label>
+          <div class="field__control">
+            <svg class="field__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+            <input id="nome" name="nome" type="text" autocomplete="name" placeholder="Nome e sobrenome"
+                   aria-describedby="nome-erro" required>
+          </div>
+          <p class="field__error" id="nome-erro" role="alert"></p>
+        </div>
+
+        <!-- Os dois blocos abaixo só aparecem para alunos (e-mail @alunos.g12.br) -->
+        <div class="field somente-aluno">
+          <label for="ano">Ano escolar</label>
+          <div class="field__control">
+            <select id="ano" name="ano" aria-describedby="ano-erro" required>
+              <option value="">Escolha o seu ano</option>
+              <option>6º ano (Fundamental)</option>
+              <option>7º ano (Fundamental)</option>
+              <option>8º ano (Fundamental)</option>
+              <option>9º ano (Fundamental)</option>
+              <option>1º ano (Ensino Médio)</option>
+              <option>2º ano (Ensino Médio)</option>
+              <option>3º ano (Ensino Médio)</option>
+            </select>
+          </div>
+          <p class="field__error" id="ano-erro" role="alert"></p>
+        </div>
+
+        <fieldset class="field somente-aluno" aria-describedby="periodo-erro">
+          <legend>Período</legend>
+          <div class="choices">
+            <label class="choice"><input type="radio" name="periodo" value="Diurno"><span>Diurno</span></label>
+            <label class="choice"><input type="radio" name="periodo" value="Integral"><span>Integral</span></label>
+            <label class="choice"><input type="radio" name="periodo" value="Noturno"><span>Noturno</span></label>
+          </div>
+          <p class="field__error" id="periodo-erro" role="alert"></p>
+        </fieldset>
+
+        <button class="btn-gradient" type="submit">Concluir cadastro</button>
+      </form>
+
+      <!-- Tela de sucesso: aparece no lugar do formulário -->
+      <div id="sucesso" hidden>
+        <div class="envelope envelope--ok" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg>
+        </div>
+        <h2 class="auth-done" id="sucesso-titulo" tabindex="-1">Cadastro concluído!</h2>
+        <p class="auth-lead" id="sucesso-texto"></p>
+        <div class="test-box" role="note">
+          <strong>Modo de teste.</strong> Nada foi salvo: o site ainda não tem banco de dados.
+        </div>
+        <a class="btn-gradient btn-gradient--link" href="index.html">Ir para o início</a>
+      </div>
+    </section>
+
+    <a class="auth-back" href="index.html">&larr; Voltar ao início</a>
+  </main>
+
+  <script src="js/auth.js"></script>
+</body>
+</html>

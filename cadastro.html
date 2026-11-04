@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign up | Troca de Livros</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+<body class="auth-page" data-page="cadastro">
+
+  <main class="auth">
+    <section class="auth-card" aria-labelledby="titulo">
+      <p class="auth-step">Etapa 1 de 3 · Cadastro</p>
+      <h1 id="titulo">Sign up</h1>
+      <p class="auth-lead">Use o seu e-mail da escola para criar a sua conta.</p>
+
+      <form id="form-cadastro" novalidate>
+
+        <div class="field">
+          <label for="email">E-mail da escola</label>
+          <div class="field__control">
+            <svg class="field__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+            <input id="email" name="email" type="email" inputmode="email" autocomplete="email" spellcheck="false"
+                   placeholder="nome.sobrenome@alunos.g12.br" aria-describedby="email-dica email-erro" required>
+          </div>
+          <p class="field__hint" id="email-dica">Alunos: nome.sobrenome@alunos.g12.br<br>Professores: e-mail terminado em @santanna.g12.br</p>
+          <p class="field__error" id="email-erro" role="alert"></p>
+        </div>
+
+        <div class="field">
+          <label for="senha">Criar senha</label>
+          <div class="field__control">
+            <svg class="field__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+            <input id="senha" name="senha" type="password" autocomplete="new-password"
+                   placeholder="Crie uma senha" aria-describedby="senha-dica senha-erro" required>
+            <button class="toggle-senha" type="button" data-alvo="senha" aria-label="Mostrar senha" aria-pressed="false">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <p class="field__hint" id="senha-dica">Mínimo de 8 caracteres, com letras e números.</p>
+          <p class="field__error" id="senha-erro" role="alert"></p>
+        </div>
+
+        <div class="field">
+          <label for="senha2">Confirmar senha</label>
+          <div class="field__control">
+            <svg class="field__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+            <input id="senha2" name="senha2" type="password" autocomplete="new-password"
+                   placeholder="Repita a senha" aria-describedby="senha2-erro" required>
+            <button class="toggle-senha" type="button" data-alvo="senha2" aria-label="Mostrar senha" aria-pressed="false">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <p class="field__error" id="senha2-erro" role="alert"></p>
+        </div>
+
+        <!-- TODO: quando houver servidor, o teste de captcha entra aqui, antes do botão. -->
+
+        <button class="btn-gradient" type="submit">Criar conta</button>
+      </form>
+
+      <p class="auth-switch">Já tem conta? <a href="#">Log In</a></p>
+      <!-- TODO: ligar o "Log In" acima à página de login quando ela existir. -->
+    </section>
+
+    <a class="auth-back" href="index.html">&larr; Voltar ao início</a>
+  </main>
+
+  <script src="js/auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,349 @@
+/* ==========================================================
+   Telas de conta: Sign up, confirmar e-mail, informações.
+   Usa as cores e a fonte definidas em style.css (:root).
+   ========================================================== */
+
+:root {
+  --erro: #b42318;
+}
+
+/* ---------- Fundo de estante com livros ---------- */
+.auth-page {
+  min-height: 100vh;
+  padding: 32px 16px;
+  display: grid;
+  place-items: center;
+  /* camada escura por cima da imagem, para o card branco se destacar */
+  background:
+    linear-gradient(rgba(11, 59, 63, 0.55), rgba(11, 59, 63, 0.8)),
+    url("../img/bg-livros.svg") center / cover no-repeat;
+  background-color: var(--verde-azul-900);
+}
+
+main.auth {
+  padding-top: 0; /* a barra fixa do site principal não existe aqui */
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+/* ---------- Card central ---------- */
+.auth-card {
+  width: min(440px, 100%);
+  padding: 40px 40px 32px;
+  background: var(--branco);
+  border-radius: 20px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+}
+
+.auth-step {
+  margin-bottom: 8px;
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--verde-azul-700);
+}
+
+.auth-card h1 {
+  margin-bottom: 8px;
+  text-align: center;
+  font-size: 2rem;
+  line-height: 1.2;
+}
+
+.auth-lead {
+  margin-bottom: 28px;
+  text-align: center;
+  font-size: 0.95rem;
+  color: var(--texto-suave);
+}
+
+.auth-lead--small {
+  margin-top: -12px;
+  margin-bottom: 20px;
+  font-size: 0.85rem;
+}
+
+.auth-lead strong {
+  color: var(--texto);
+  word-break: break-all;
+}
+
+.auth-done {
+  margin-bottom: 8px;
+  text-align: center;
+  font-size: 1.75rem;
+}
+
+.auth-back {
+  color: var(--branco);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.auth-back:hover {
+  text-decoration: underline;
+}
+
+.auth-switch {
+  margin-top: 24px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--texto-suave);
+}
+
+.auth-switch a {
+  color: var(--verde-azul-700);
+  font-weight: 700;
+}
+
+/* ---------- Campos (linha embaixo + ícone) ---------- */
+.field {
+  margin: 0 0 20px;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.field label,
+.field legend {
+  display: block;
+  margin-bottom: 4px;
+  padding: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.field__control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 2px solid var(--borda);
+  transition: border-color 0.15s;
+}
+
+.field__control:focus-within {
+  border-color: var(--verde-azul-600);
+}
+
+.field__control.is-invalid {
+  border-color: var(--erro);
+}
+
+.field__icon {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  color: var(--texto-suave);
+}
+
+.field input,
+.field select {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 0;
+  border: 0;
+  outline: none; /* o destaque é a linha de baixo mudando de cor */
+  background: transparent;
+  font: inherit;
+  font-size: 1rem;
+  color: var(--texto);
+}
+
+.field input::placeholder {
+  color: #5f7775;
+}
+
+.field__hint {
+  margin-top: 6px;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--texto-suave);
+}
+
+.field__error {
+  margin-top: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--erro);
+}
+
+.field__error:empty {
+  display: none;
+}
+
+.toggle-senha {
+  flex: none;
+  display: grid;
+  place-items: center;
+  padding: 4px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--texto-suave);
+  cursor: pointer;
+}
+
+.toggle-senha svg {
+  width: 20px;
+  height: 20px;
+}
+
+.toggle-senha:hover {
+  color: var(--verde-azul-700);
+}
+
+/* ---------- Escolha de período ---------- */
+.choices {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.choice {
+  position: relative;
+  margin: 0;
+}
+
+.choice input {
+  position: absolute;
+  opacity: 0;
+}
+
+.choice span {
+  display: block;
+  padding: 12px 8px;
+  border: 2px solid var(--borda);
+  border-radius: 12px;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+
+.choice span:hover {
+  border-color: var(--verde-azul-600);
+}
+
+.choice input:checked + span {
+  border-color: var(--verde-azul-700);
+  background: var(--verde-azul-50);
+  color: var(--verde-azul-700);
+}
+
+.choice input:focus-visible + span {
+  outline: 3px solid var(--azul-600);
+  outline-offset: 2px;
+}
+
+/* ---------- Botão com gradiente ---------- */
+.btn-gradient {
+  display: block;
+  width: 100%;
+  padding: 14px 24px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--verde-azul-700), var(--azul-700));
+  box-shadow: 0 8px 20px rgba(15, 118, 110, 0.35);
+  color: var(--branco);
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-align: center;
+  text-decoration: none;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 0.15s, filter 0.15s;
+}
+
+.btn-gradient:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+}
+
+.btn-gradient:active {
+  transform: translateY(0);
+}
+
+.btn-gradient--link {
+  margin-top: 20px;
+}
+
+/* ---------- Confirmar e-mail ---------- */
+.envelope {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  margin: 12px auto 16px;
+  border-radius: 50%;
+  background: var(--verde-azul-100);
+  color: var(--verde-azul-700);
+}
+
+.envelope svg {
+  width: 34px;
+  height: 34px;
+}
+
+.test-box {
+  margin: 0 0 20px;
+  padding: 14px 16px;
+  border: 1px solid #f0d58a;
+  border-radius: 12px;
+  background: #fff7e0;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: #5c4500;
+}
+
+.auth-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 20px;
+  font-size: 0.9rem;
+}
+
+.auth-actions a,
+.link-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--verde-azul-700);
+  cursor: pointer;
+}
+
+.link-button:disabled {
+  color: var(--texto-suave);
+  cursor: default;
+}
+
+.auth-status {
+  min-height: 1.2em;
+  margin-top: 12px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--texto-suave);
+}
+
+/* ---------- Celular ---------- */
+@media (max-width: 480px) {
+  .auth-card {
+    padding: 32px 22px 28px;
+  }
+
+  .auth-card h1 {
+    font-size: 1.75rem;
+  }
+}
