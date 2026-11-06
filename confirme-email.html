@@ -26,8 +26,8 @@
 
       <!-- Aviso de teste: apague esta caixa quando o envio de e-mail for real. -->
       <div class="test-box" role="note">
-        <strong>Modo de teste.</strong> O site ainda não tem servidor, então <strong>nenhum e-mail foi enviado de verdade</strong>.
-        Use o botão abaixo para fingir que você clicou no link.
+        <strong>Modo de teste.</strong> O e-mail de confirmação <strong>é enviado de verdade</strong> pelo Supabase.
+        O botão abaixo só funciona se você já estiver com a sessão aberta (depois de clicar no link do e-mail ou fazer login).
       </div>
 
       <button class="btn-gradient" type="button" id="simular-link">Simular clique no link do e-mail</button>
@@ -42,6 +42,8 @@
     <a class="auth-back" href="index.html">&larr; Voltar ao início</a>
   </main>
 
+  <script src="js/vendor/supabase-js-2.118.0.js"></script>
+  <script src="js/supabase-config.js"></script>
   <script src="js/auth.js"></script>
 </body>
 </html>

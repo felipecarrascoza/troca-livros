@@ -48,8 +48,13 @@
       </form>
 
       <!-- Aparece depois de um login válido: por enquanto não existe página depois do login -->
-      <div class="test-box test-box--login" id="aviso-teste" role="status" hidden>
-        <strong>Modo de teste.</strong> Login simulado: nenhuma senha foi conferida e ainda não existe
+      <div class="logado" id="aviso-login" role="status" hidden>
+        <strong id="logado-titulo"></strong>
+        <p id="logado-texto"></p>
+        <button class="link-button" type="button" id="sair">Sair</button>
+      </div>
+      <div class="test-box test-box--login" id="aviso-teste" role="note" hidden>
+        <strong>Modo de teste.</strong> O login agora é de verdade, mas ainda não existe
         uma página depois do login.
       </div>
 
@@ -59,6 +64,8 @@
     <a class="auth-back" href="index.html">&larr; Voltar ao início</a>
   </main>
 
+  <script src="js/vendor/supabase-js-2.118.0.js"></script>
+  <script src="js/supabase-config.js"></script>
   <script src="js/auth.js"></script>
   <!-- DEV: atalhos de teste. Remover estas 2 linhas (e js/config.js, js/dev-atalhos.js) antes da versão final -->
   <script src="js/config.js"></script>

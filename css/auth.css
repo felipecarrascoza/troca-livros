@@ -445,3 +445,18 @@ main.auth {
     font-size: 1.75rem;
   }
 }
+
+.logado {
+  margin: 20px 0 0;
+  padding: 14px 16px;
+  border: 1px solid var(--verde-azul-100);
+  border-radius: 12px;
+  background: var(--verde-azul-100);
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--verde-azul-700);
+}
+
+.logado p {
+  margin: 6px 0 10px;
+}

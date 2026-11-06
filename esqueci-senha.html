@@ -41,8 +41,8 @@
 
         <!-- Aviso de teste: apague esta caixa quando o envio de e-mail for real. -->
         <div class="test-box" role="note">
-          <strong>Modo de teste.</strong> O site ainda não tem servidor, então <strong>nenhum e-mail foi enviado de verdade</strong>.
-          Use o botão abaixo para fingir que você clicou no link.
+          <strong>Modo de teste.</strong> O e-mail com o link <strong>é enviado de verdade</strong> pelo Supabase.
+          O botão abaixo não consegue fingir o clique no link: use o e-mail que chegou.
         </div>
 
         <button class="btn-gradient" type="button" id="simular-reset">Simular clique no link do e-mail</button>
@@ -59,6 +59,8 @@
     <a class="auth-back" href="index.html">&larr; Voltar ao início</a>
   </main>
 
+  <script src="js/vendor/supabase-js-2.118.0.js"></script>
+  <script src="js/supabase-config.js"></script>
   <script src="js/auth.js"></script>
   <!-- DEV: atalhos de teste. Remover estas 2 linhas (e js/config.js, js/dev-atalhos.js) antes da versão final -->
   <script src="js/config.js"></script>

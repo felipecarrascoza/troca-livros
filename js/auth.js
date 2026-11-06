@@ -1,12 +1,11 @@
 /* ==========================================================
    Telas de conta (cadastro, confirmar e-mail, informações e,
-   para professores, dias e horários na escola).
+   para professores, dias e horários na escola, login e senha).
 
-   ATENÇÃO: este script é uma SIMULAÇÃO, só para testar o visual
-   e o caminho das telas. Ele NÃO cria conta, NÃO envia e-mail
-   e NÃO guarda nada. A senha nunca sai do campo: não é salva em
-   lugar nenhum. Quando houver servidor (ex.: Supabase), as partes
-   marcadas com "TODO" passam a falar com ele.
+   Agora tudo fala com o Supabase de verdade (js/supabase-config.js):
+   a conta, o e-mail de confirmação, o login, a troca de senha e o
+   perfil são guardados no servidor. A senha nunca fica salva no site.
+   As etapas dependem da SESSÃO de quem entrou, não de dados na URL.
 
    Caminhos:
    - Aluno (@alunos.g12.br):
@@ -52,7 +51,13 @@
     if (el) el.textContent = texto;
   }
 
-  // Monta um endereço de página com dados no final (?email=...&nome=...)
+  // Endereço completo de uma página do site (serve também para subpastas do GitHub Pages)
+  function urlDaPagina(pagina) {
+    return new URL(pagina, window.location.href).href;
+  }
+
+  // Monta um endereço de página com dados no final (?email=...)
+  // Só usamos isto para coisas que não são segredo (ex.: mostrar o e-mail digitado).
   function montarUrl(pagina, dados) {
     var p = new URLSearchParams();
     Object.keys(dados).forEach(function (chave) {
@@ -61,20 +66,8 @@
     return pagina + "?" + p.toString();
   }
 
-  // Lê os dados que vieram no endereço da página
-  // TODO: com servidor, isto vira a sessão da pessoa que entrou.
-  function lerEndereco() {
-    var p = new URLSearchParams(window.location.search);
-    var idsValidos = DIAS.map(function (d) { return d.id; });
-    return {
-      email: p.get("email") || "",
-      confirmado: p.get("confirmado") === "1",
-      link: p.get("link") === "1", // simula o link recebido por e-mail (redefinir senha)
-      nome: p.get("nome") || "",
-      dias: (p.get("dias") || "").split(",").filter(function (d) {
-        return idsValidos.indexOf(d) !== -1;
-      })
-    };
+  function emailDoEndereco() {
+    return new URLSearchParams(window.location.search).get("email") || "";
   }
 
   function primeiroNome(nome) {
@@ -92,6 +85,130 @@
         botao.setAttribute("aria-label", mostrar ? "Ocultar senha" : "Mostrar senha");
       });
     });
+  }
+
+  /* ---------- Servidor (Supabase) ---------- */
+
+  var cliente = null;
+
+  function obterCliente() {
+    if (cliente) return cliente;
+    var cfg = window.SUPABASE_CONFIG;
+    if (!window.supabase || !cfg || !cfg.url || !cfg.chavePublica) return null;
+    cliente = window.supabase.createClient(cfg.url, cfg.chavePublica);
+    return cliente;
+  }
+
+  // Traduz os erros do servidor para uma frase simples (sem mostrar detalhes técnicos)
+  function traduzirErro(erro) {
+    var texto = String((erro && (erro.message || erro.code)) || "").toLowerCase();
+    var status = erro && erro.status;
+    if (!erro) return "";
+    if (texto.indexOf("invalid login") !== -1) return "E-mail ou senha incorretos.";
+    if (texto.indexOf("not confirmed") !== -1) return "Você ainda não confirmou o e-mail.";
+    if (status === 429 || texto.indexOf("rate limit") !== -1 || texto.indexOf("too many") !== -1 || texto.indexOf("security purposes") !== -1) {
+      return "Muitas tentativas. Espere alguns minutos e tente de novo.";
+    }
+    if (texto.indexOf("database error saving new user") !== -1 || texto.indexOf("escola") !== -1) {
+      return "Esse e-mail não pode criar conta. Use o e-mail da escola.";
+    }
+    if (texto.indexOf("different from the old") !== -1) return "Escolha uma senha diferente da anterior.";
+    if (texto.indexOf("weak") !== -1 || texto.indexOf("password should") !== -1) {
+      return "Senha fraca. Use pelo menos 8 caracteres, com letras e números.";
+    }
+    if (texto.indexOf("failed to fetch") !== -1 || texto.indexOf("network") !== -1 || texto.indexOf("load failed") !== -1) {
+      return "Não consegui falar com o servidor. Confira a internet e tente de novo.";
+    }
+    return "Algo deu errado. Tente de novo em instantes.";
+  }
+
+  // Mensagem de erro do formulário inteiro (acima do botão)
+  function avisoDoFormulario(form) {
+    var p = form.querySelector(".form-erro");
+    if (!p) {
+      p = document.createElement("p");
+      p.className = "field__error form-erro";
+      p.setAttribute("role", "alert");
+      var botao = form.querySelector("button[type=submit]");
+      botao.parentNode.insertBefore(p, botao);
+    }
+    return p;
+  }
+
+  // Trava o botão enquanto o servidor responde (evita clicar duas vezes)
+  function ocupado(form, ligado, textoOcupado) {
+    var botao = form.querySelector("button[type=submit]");
+    if (!botao) return;
+    if (ligado) {
+      botao.dataset.textoOriginal = botao.textContent;
+      botao.textContent = textoOcupado;
+    } else if (botao.dataset.textoOriginal) {
+      botao.textContent = botao.dataset.textoOriginal;
+    }
+    botao.disabled = ligado;
+  }
+
+  // Quem está com a sessão aberta e qual é o perfil dela. Devolve null se não há sessão.
+  async function carregarConta() {
+    var c = obterCliente();
+    if (!c) return null;
+    var r = await c.auth.getSession();
+    var sessao = r.data && r.data.session;
+    if (!sessao) return null;
+    var p = await c.from("perfis")
+      .select("papel,nome,programa,ano,periodo,email")
+      .eq("id", sessao.user.id)
+      .maybeSingle();
+    if (p.error || !p.data) return null;
+    return { usuario: sessao.user, perfil: p.data };
+  }
+
+  // Páginas das etapas: sem sessão volta para o login; devolve a conta ou null
+  async function exigirConta() {
+    var conta = await carregarConta();
+    if (!conta) {
+      window.location.replace("login.html");
+      return null;
+    }
+    return conta;
+  }
+
+  // Páginas exclusivas de professor (dias e horários)
+  async function exigirProfessor() {
+    var conta = await exigirConta();
+    if (!conta) return null;
+    if (conta.perfil.papel !== "professor" || !conta.perfil.nome) {
+      window.location.replace("informacoes.html");
+      return null;
+    }
+    return conta;
+  }
+
+  // Horários que o professor já salvou antes (lista vazia se não houver)
+  async function horariosSalvos(usuarioId) {
+    var r = await obterCliente().from("horarios_professor")
+      .select("dia,inicio,fim")
+      .eq("professor_id", usuarioId);
+    return r.error || !r.data ? [] : r.data;
+  }
+
+  function diasGuardados() {
+    var ids = DIAS.map(function (d) { return d.id; });
+    try {
+      return (sessionStorage.getItem("troca_dias") || "").split(",").filter(function (d) {
+        return ids.indexOf(d) !== -1;
+      });
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function guardarDias(dias) {
+    try { sessionStorage.setItem("troca_dias", dias.join(",")); } catch (e) { /* tudo bem */ }
+  }
+
+  function horaCurta(hora) {
+    return String(hora || "").slice(0, 5); // "08:00:00" -> "08:00"
   }
 
   /* ---------- Validações ---------- */
@@ -132,26 +249,6 @@
     if (valor.length < 8) return "A senha precisa ter pelo menos 8 caracteres.";
     if (!/[A-Za-z]/.test(valor) || !/\d/.test(valor)) return "Use letras e números na senha.";
     return "";
-  }
-
-  // Páginas exclusivas de professor: quem não é professor volta para o seu caminho.
-  // Devolve os dados da pessoa, ou null quando redirecionou.
-  function exigirProfessor() {
-    var dados = lerEndereco();
-    var r = validarEmail(dados.email);
-    if (!r.ok) {
-      window.location.replace("cadastro.html");
-      return null;
-    }
-    if (!dados.confirmado) {
-      window.location.replace(montarUrl("confirme-email.html", { email: r.email }));
-      return null;
-    }
-    if (r.papel !== "professor") {
-      window.location.replace(montarUrl("informacoes.html", { email: r.email, confirmado: "1" }));
-      return null;
-    }
-    return { email: r.email, nome: dados.nome, dias: dados.dias };
   }
 
   /* ---------- Página: cadastro ---------- */
@@ -202,7 +299,7 @@
 
     ativarBotoesSenha();
 
-    form.addEventListener("submit", function (evento) {
+    form.addEventListener("submit", async function (evento) {
       evento.preventDefault();
       var r = checarEmail();
       var okSenha = checarSenha();
@@ -212,16 +309,46 @@
       if (!okSenha) return senha.focus();
       if (!okSenha2) return senha2.focus();
 
-      // TODO: aqui o servidor cria a conta e envia o e-mail de confirmação.
-      window.location.href = montarUrl("confirme-email.html", { email: r.email });
+      var c = obterCliente();
+      var aviso = avisoDoFormulario(form);
+      aviso.textContent = "";
+      if (!c) {
+        aviso.textContent = "Não foi possível carregar o servidor. Recarregue a página.";
+        return;
+      }
+
+      ocupado(form, true, "Criando conta...");
+      try {
+        // O servidor confere de novo se o e-mail é da escola e envia o e-mail de confirmação.
+        var resposta = await c.auth.signUp({
+          email: r.email,
+          password: senha.value,
+          options: { emailRedirectTo: urlDaPagina("informacoes.html") }
+        });
+        if (resposta.error) {
+          aviso.textContent = traduzirErro(resposta.error);
+          return;
+        }
+        // Se o projeto não exigir confirmação de e-mail, a sessão já vem aberta
+        if (resposta.data && resposta.data.session) {
+          window.location.href = "informacoes.html";
+          return;
+        }
+        window.location.href = montarUrl("confirme-email.html", { email: r.email });
+      } catch (erro) {
+        aviso.textContent = traduzirErro(erro);
+      } finally {
+        ocupado(form, false);
+      }
     });
   }
 
   /* ---------- Página: confirmar e-mail ---------- */
 
   function iniciarConfirmacao() {
-    var dados = lerEndereco();
-    var r = validarEmail(dados.email);
+    // Aqui ainda não existe sessão (a conta só vale depois do clique no link do e-mail).
+    // O e-mail vem no endereço só para ser mostrado e usado no reenvio.
+    var r = validarEmail(emailDoEndereco());
     if (!r.ok) {
       window.location.replace("cadastro.html");
       return;
@@ -233,16 +360,20 @@
     var reenviar = porId("reenviar");
     var espera = null;
 
-    // Em vez de clicar no link do e-mail, o botão de teste faz o mesmo caminho
-    porId("simular-link").addEventListener("click", function () {
-      window.location.href = montarUrl("informacoes.html", { email: r.email, confirmado: "1" });
+    // Só vale se a pessoa já estiver com a sessão aberta; senão, só o link do e-mail serve
+    porId("simular-link").addEventListener("click", async function () {
+      var conta = await carregarConta();
+      if (conta) {
+        window.location.href = "informacoes.html";
+      } else {
+        status.textContent = "Ainda sem sessão: clique no link que chegou no seu e-mail.";
+      }
     });
 
-    reenviar.addEventListener("click", function () {
-      // TODO: aqui o servidor reenvia o e-mail de verdade.
+    function contar() {
       var segundos = 30;
       reenviar.disabled = true;
-      status.textContent = "Reenvio simulado. Nenhum e-mail foi enviado de verdade.";
+      reenviar.textContent = "Reenviar em " + segundos + "s";
       espera = window.setInterval(function () {
         segundos -= 1;
         reenviar.textContent = "Reenviar em " + segundos + "s";
@@ -252,27 +383,47 @@
           reenviar.textContent = "Reenviar e-mail";
         }
       }, 1000);
-      reenviar.textContent = "Reenviar em " + segundos + "s";
+    }
+
+    reenviar.addEventListener("click", async function () {
+      var c = obterCliente();
+      if (!c) {
+        status.textContent = "Não foi possível carregar o servidor. Recarregue a página.";
+        return;
+      }
+      reenviar.disabled = true;
+      status.textContent = "Enviando...";
+      try {
+        var resposta = await c.auth.resend({
+          type: "signup",
+          email: r.email,
+          options: { emailRedirectTo: urlDaPagina("informacoes.html") }
+        });
+        if (resposta.error) {
+          status.textContent = traduzirErro(resposta.error);
+          reenviar.disabled = false;
+          return;
+        }
+        status.textContent = "Enviamos o e-mail de novo. Olhe também na caixa de spam.";
+        contar();
+      } catch (erro) {
+        status.textContent = traduzirErro(erro);
+        reenviar.disabled = false;
+      }
     });
   }
 
   /* ---------- Página: informações adicionais ---------- */
 
-  function iniciarInformacoes() {
-    var dados = lerEndereco();
-    var r = validarEmail(dados.email);
+  async function iniciarInformacoes() {
+    // enquanto a conta carrega, um envio apressado não pode recarregar a página
+    porId("form-informacoes").addEventListener("submit", function (e) { e.preventDefault(); });
+    // Só entra aqui quem clicou no link do e-mail (ou fez login): precisa de sessão.
+    var conta = await exigirConta();
+    if (!conta) return;
+    var perfil = conta.perfil;
 
-    // sem e-mail válido ou sem confirmação, volta para o começo do caminho
-    if (!r.ok) {
-      window.location.replace("cadastro.html");
-      return;
-    }
-    if (!dados.confirmado) {
-      window.location.replace(montarUrl("confirme-email.html", { email: r.email }));
-      return;
-    }
-
-    var ehAluno = r.papel === "aluno";
+    var ehAluno = perfil.papel === "aluno";
     var form = porId("form-informacoes");
     var nome = porId("nome");
     var ano = porId("ano");
@@ -286,7 +437,15 @@
       definirEtapa("Etapa 3 de 5 · Informações");
       form.querySelector("button[type=submit]").textContent = "Continuar";
     }
-    if (dados.nome) nome.value = dados.nome; // ao voltar da etapa seguinte
+    // se a pessoa já preencheu antes (ou voltou da etapa seguinte), os dados aparecem
+    if (perfil.nome) nome.value = perfil.nome;
+    if (ehAluno) {
+      if (perfil.ano) ano.value = perfil.ano;
+      [["programa", perfil.programa], ["periodo", perfil.periodo]].forEach(function (par) {
+        var radio = document.querySelector("input[name='" + par[0] + "'][value='" + par[1] + "']");
+        if (radio) radio.checked = true;
+      });
+    }
 
     function checarNome() {
       var texto = nome.value.trim().replace(/\s+/g, " ");
@@ -319,7 +478,7 @@
       radio.addEventListener("change", periodoEscolhido);
     });
 
-    form.addEventListener("submit", function (evento) {
+    form.addEventListener("submit", async function (evento) {
       evento.preventDefault();
       var okNome = checarNome();
       var programa = ehAluno ? programaEscolhido() : "-";
@@ -331,18 +490,37 @@
       if (!okAno) return ano.focus();
       if (!periodo) return document.querySelector("input[name='periodo']").focus();
 
-      // TODO: aqui o servidor salva nome, programa, ano e período no perfil.
+      // Salva no perfil de quem está logado (as regras do banco só deixam alterar o próprio)
+      var nomeLimpo = nome.value.trim().replace(/\s+/g, " ");
+      var campos = ehAluno
+        ? { nome: nomeLimpo, programa: programa, ano: ano.value, periodo: periodo }
+        : { nome: nomeLimpo };
+      var aviso = avisoDoFormulario(form);
+      aviso.textContent = "";
+      ocupado(form, true, "Salvando...");
+      try {
+        var salvo = await obterCliente().from("perfis")
+          .update(campos)
+          .eq("id", conta.usuario.id)
+          .select("id");
+        if (salvo.error || !salvo.data || !salvo.data.length) {
+          aviso.textContent = "Não consegui salvar. Tente de novo em instantes.";
+          return;
+        }
+      } catch (erro) {
+        aviso.textContent = traduzirErro(erro);
+        return;
+      } finally {
+        ocupado(form, false);
+      }
+
       if (!ehAluno) {
         // professor segue para a etapa dos dias na escola
-        window.location.href = montarUrl("professor-dias.html", {
-          email: r.email,
-          confirmado: "1",
-          nome: nome.value.trim().replace(/\s+/g, " ")
-        });
+        window.location.href = "professor-dias.html";
         return;
       }
 
-      porId("sucesso-texto").textContent = "Bem-vindo(a), " + primeiroNome(nome.value) + "!";
+      porId("sucesso-texto").textContent = "Bem-vindo(a), " + primeiroNome(nomeLimpo) + "!";
       form.hidden = true;
       porId("sucesso").hidden = false;
       document.querySelector(".auth-lead").hidden = true;
@@ -353,13 +531,15 @@
 
   /* ---------- Página: professor, dias na escola ---------- */
 
-  function iniciarProfessorDias() {
-    var ctx = exigirProfessor();
+  async function iniciarProfessorDias() {
+    porId("form-dias").addEventListener("submit", function (e) { e.preventDefault(); });
+    var ctx = await exigirProfessor();
     if (!ctx) return;
-    if (!ctx.nome) {
-      // pulou a etapa do nome: volta para ela
-      window.location.replace(montarUrl("informacoes.html", { email: ctx.email, confirmado: "1" }));
-      return;
+
+    // dias já escolhidos nesta visita; se não há, os que o professor salvou antes
+    var diasMarcados = diasGuardados();
+    if (!diasMarcados.length) {
+      diasMarcados = (await horariosSalvos(ctx.usuario.id)).map(function (h) { return h.dia; });
     }
 
     var form = porId("form-dias");
@@ -368,7 +548,7 @@
 
     // ao voltar da etapa dos horários, os dias já escolhidos continuam marcados
     caixas.forEach(function (caixa) {
-      caixa.checked = ctx.dias.indexOf(caixa.value) !== -1;
+      caixa.checked = diasMarcados.indexOf(caixa.value) !== -1;
       caixa.addEventListener("change", function () {
         if (selecionados().length) erro.textContent = "";
       });
@@ -380,10 +560,6 @@
       }).map(function (d) { return d.id; });
     }
 
-    porId("voltar").href = montarUrl("informacoes.html", {
-      email: ctx.email, confirmado: "1", nome: ctx.nome
-    });
-
     form.addEventListener("submit", function (evento) {
       evento.preventDefault();
       var dias = selecionados();
@@ -392,37 +568,31 @@
         caixas[0].focus();
         return;
       }
-      window.location.href = montarUrl("professor-horarios.html", {
-        email: ctx.email, confirmado: "1", nome: ctx.nome, dias: dias.join(",")
-      });
+      guardarDias(dias);
+      window.location.href = "professor-horarios.html";
     });
   }
 
   /* ---------- Página: professor, horários na escola ---------- */
 
-  function iniciarProfessorHorarios() {
-    var ctx = exigirProfessor();
+  async function iniciarProfessorHorarios() {
+    var ctx = await exigirProfessor();
     if (!ctx) return;
-    if (!ctx.nome) {
-      window.location.replace(montarUrl("informacoes.html", { email: ctx.email, confirmado: "1" }));
-      return;
+    var salvos = await horariosSalvos(ctx.usuario.id);
+    var diasEscolhidos = diasGuardados();
+    if (!diasEscolhidos.length) {
+      diasEscolhidos = salvos.map(function (h) { return h.dia; });
     }
-    var dias = DIAS.filter(function (d) { return ctx.dias.indexOf(d.id) !== -1; });
+    var dias = DIAS.filter(function (d) { return diasEscolhidos.indexOf(d.id) !== -1; });
     if (!dias.length) {
       // pulou a escolha dos dias: volta para ela
-      window.location.replace(montarUrl("professor-dias.html", {
-        email: ctx.email, confirmado: "1", nome: ctx.nome
-      }));
+      window.location.replace("professor-dias.html");
       return;
     }
 
     var form = porId("form-horarios");
     var lista = porId("lista-horarios");
     var status = porId("status");
-
-    porId("voltar").href = montarUrl("professor-dias.html", {
-      email: ctx.email, confirmado: "1", nome: ctx.nome, dias: ctx.dias.join(",")
-    });
 
     // uma linha "das ... às ..." para cada dia escolhido
     function criarCampo(id, rotulo) {
@@ -470,6 +640,14 @@
       return { ini: porId("ini-" + id), fim: porId("fim-" + id), erro: porId("erro-" + id) };
     }
 
+    // horários que o professor já tinha salvo aparecem preenchidos
+    salvos.forEach(function (h) {
+      if (!porId("ini-" + h.dia)) return;
+      var c = campos(h.dia);
+      c.ini.value = horaCurta(h.inicio);
+      c.fim.value = horaCurta(h.fim);
+    });
+
     // devolve a mensagem de erro de um dia, ou "" quando está certo
     function conferirDia(id) {
       var c = campos(id);
@@ -513,7 +691,7 @@
       status.textContent = "Horário de " + dias[0].nome + " copiado para todos os dias.";
     });
 
-    form.addEventListener("submit", function (evento) {
+    form.addEventListener("submit", async function (evento) {
       evento.preventDefault();
       var primeiroErro = null;
       dias.forEach(function (d) {
@@ -525,8 +703,38 @@
         return;
       }
 
-      // TODO: aqui o servidor salva o nome, os dias e os horários no perfil.
+      // Salva os horários (um por dia) e apaga os dias que o professor tirou da lista
+      var linhas = dias.map(function (d) {
+        var c = campos(d.id);
+        return { professor_id: ctx.usuario.id, dia: d.id, inicio: c.ini.value, fim: c.fim.value };
+      });
+      var aviso = avisoDoFormulario(form);
+      aviso.textContent = "";
+      ocupado(form, true, "Salvando...");
+      try {
+        var cl = obterCliente();
+        var gravou = await cl.from("horarios_professor").upsert(linhas, { onConflict: "professor_id,dia" });
+        if (gravou.error) {
+          aviso.textContent = "Não consegui salvar os horários. Tente de novo em instantes.";
+          return;
+        }
+        var apagou = await cl.from("horarios_professor").delete()
+          .eq("professor_id", ctx.usuario.id)
+          .not("dia", "in", "(" + dias.map(function (d) { return d.id; }).join(",") + ")");
+        if (apagou.error) {
+          aviso.textContent = "Salvei os horários, mas não consegui tirar os dias antigos. Tente de novo.";
+          return;
+        }
+      } catch (erro) {
+        aviso.textContent = traduzirErro(erro);
+        return;
+      } finally {
+        ocupado(form, false);
+      }
+      guardarDias([]);
+
       var resumo = porId("resumo");
+      resumo.textContent = "";
       dias.forEach(function (d) {
         var c = campos(d.id);
         var item = document.createElement("li");
@@ -536,7 +744,7 @@
         item.appendChild(document.createTextNode(": das " + c.ini.value + " às " + c.fim.value));
         resumo.appendChild(item);
       });
-      porId("sucesso-texto").textContent = "Bem-vindo(a), " + primeiroNome(ctx.nome) + "!";
+      porId("sucesso-texto").textContent = "Bem-vindo(a), " + primeiroNome(ctx.perfil.nome) + "!";
       form.hidden = true;
       porId("acoes-voltar").hidden = true;
       document.querySelector(".auth-lead").hidden = true;
@@ -555,8 +763,7 @@
     var aviso = porId("aviso-teste");
 
     // ao voltar de "senha alterada", o e-mail já vem preenchido
-    var dados = lerEndereco();
-    var inicial = validarEmail(dados.email);
+    var inicial = validarEmail(emailDoEndereco());
     if (inicial.ok) email.value = inicial.email;
 
     function checarEmail() {
@@ -575,7 +782,7 @@
     senha.addEventListener("blur", checarSenha);
     [email, senha].forEach(function (campo) {
       campo.addEventListener("input", function () {
-        aviso.hidden = true;
+        avisoDoFormulario(form).textContent = "";
         if (campo.getAttribute("aria-invalid") === "true") {
           if (campo === email) checarEmail();
           else checarSenha();
@@ -584,15 +791,71 @@
     });
     ativarBotoesSenha();
 
-    form.addEventListener("submit", function (evento) {
+    // Mostra a tela de "você entrou" (por enquanto não existe página depois do login)
+    function mostrarEntrou(conta) {
+      var nome = conta.perfil.nome ? primeiroNome(conta.perfil.nome) : conta.perfil.email;
+      porId("logado-titulo").textContent = "Você entrou, " + nome + "!";
+      porId("logado-texto").textContent = "Ainda não existe uma página depois do login. Ela será a próxima etapa do site.";
+      form.hidden = true;
+      porId("aviso-login").hidden = false;
+      aviso.hidden = false;
+    }
+
+    porId("sair").addEventListener("click", async function () {
+      var c = obterCliente();
+      if (c) await c.auth.signOut();
+      window.location.reload();
+    });
+
+    // se a pessoa já está logada, mostra direto
+    carregarConta().then(function (conta) {
+      if (conta) mostrarEntrou(conta);
+    });
+
+    form.addEventListener("submit", async function (evento) {
       evento.preventDefault();
       var okEmail = checarEmail();
       var okSenha = checarSenha();
       if (!okEmail) return email.focus();
       if (!okSenha) return senha.focus();
 
-      // TODO: aqui o servidor confere e-mail e senha de verdade e abre a conta da pessoa.
-      aviso.hidden = false;
+      var c = obterCliente();
+      var erroForm = avisoDoFormulario(form);
+      erroForm.textContent = "";
+      if (!c) {
+        erroForm.textContent = "Não foi possível carregar o servidor. Recarregue a página.";
+        return;
+      }
+
+      ocupado(form, true, "Entrando...");
+      try {
+        var emailLimpo = email.value.trim().toLowerCase();
+        var resposta = await c.auth.signInWithPassword({ email: emailLimpo, password: senha.value });
+        if (resposta.error) {
+          if (String(resposta.error.message || "").toLowerCase().indexOf("not confirmed") !== -1) {
+            // ainda não confirmou: leva para a tela que reenvia o e-mail
+            window.location.href = montarUrl("confirme-email.html", { email: emailLimpo });
+            return;
+          }
+          erroForm.textContent = traduzirErro(resposta.error);
+          return;
+        }
+        var conta = await carregarConta();
+        if (!conta) {
+          erroForm.textContent = "Entrei, mas não achei o seu perfil. Tente de novo.";
+          return;
+        }
+        // cadastro pela metade: continua de onde parou
+        if (!conta.perfil.nome) {
+          window.location.href = "informacoes.html";
+          return;
+        }
+        mostrarEntrou(conta);
+      } catch (erro) {
+        erroForm.textContent = traduzirErro(erro);
+      } finally {
+        ocupado(form, false);
+      }
     });
   }
 
@@ -614,13 +877,37 @@
       if (email.getAttribute("aria-invalid") === "true") checarEmail();
     });
 
-    form.addEventListener("submit", function (evento) {
+    form.addEventListener("submit", async function (evento) {
       evento.preventDefault();
       var r = checarEmail();
       if (!r.ok) return email.focus();
 
-      // TODO: aqui o servidor envia o e-mail com o link. A resposta é a MESMA exista ou
-      // não uma conta com esse e-mail, para ninguém descobrir quem tem cadastro.
+      var c = obterCliente();
+      var erroForm = avisoDoFormulario(form);
+      erroForm.textContent = "";
+      if (!c) {
+        erroForm.textContent = "Não foi possível carregar o servidor. Recarregue a página.";
+        return;
+      }
+
+      // A resposta na tela é a MESMA exista ou não uma conta com esse e-mail,
+      // para ninguém descobrir quem tem cadastro. Só mostramos erro de limite ou de internet.
+      ocupado(form, true, "Enviando...");
+      try {
+        var resposta = await c.auth.resetPasswordForEmail(r.email, {
+          redirectTo: urlDaPagina("redefinir-senha.html")
+        });
+        if (resposta.error && (resposta.error.status === 429 || !resposta.error.status)) {
+          erroForm.textContent = traduzirErro(resposta.error);
+          return;
+        }
+      } catch (erro) {
+        erroForm.textContent = traduzirErro(erro);
+        return;
+      } finally {
+        ocupado(form, false);
+      }
+
       ultimo = r.email;
       porId("email-mostrado").textContent = r.email;
       form.hidden = true;
@@ -632,7 +919,10 @@
 
     // Em vez de clicar no link do e-mail, o botão de teste faz o mesmo caminho
     porId("simular-reset").addEventListener("click", function () {
-      window.location.href = montarUrl("redefinir-senha.html", { email: ultimo, link: "1" });
+      // não dá para fingir o clique: o link de verdade só chega por e-mail
+      var botao = porId("simular-reset");
+      botao.textContent = "Use o link que chegou no seu e-mail";
+      botao.disabled = true;
     });
 
     porId("outro-email").addEventListener("click", function () {
@@ -647,14 +937,15 @@
 
   /* ---------- Página: criar nova senha ---------- */
 
-  function iniciarRedefinir() {
-    var dados = lerEndereco();
-    var r = validarEmail(dados.email);
-    // sem e-mail válido ou sem o "link" do e-mail, volta para pedir o link
-    if (!r.ok || !dados.link) {
+  async function iniciarRedefinir() {
+    // O link do e-mail abre esta página com uma sessão de recuperação. Sem ela, pede um link novo.
+    var c = obterCliente();
+    var sessao = c ? (await c.auth.getSession()).data.session : null;
+    if (!sessao) {
       window.location.replace("esqueci-senha.html");
       return;
     }
+    var emailDaConta = sessao.user.email;
 
     var form = porId("form-redefinir");
     var senha = porId("senha");
@@ -682,15 +973,30 @@
     });
     ativarBotoesSenha();
 
-    form.addEventListener("submit", function (evento) {
+    form.addEventListener("submit", async function (evento) {
       evento.preventDefault();
       var okSenha = checarSenha();
       var okSenha2 = checarSenha2();
       if (!okSenha) return senha.focus();
       if (!okSenha2) return senha2.focus();
 
-      // TODO: aqui o servidor confere o código do link e salva a nova senha.
-      porId("ir-login").href = montarUrl("login.html", { email: r.email });
+      var aviso = avisoDoFormulario(form);
+      aviso.textContent = "";
+      ocupado(form, true, "Salvando...");
+      try {
+        var resposta = await c.auth.updateUser({ password: senha.value });
+        if (resposta.error) {
+          aviso.textContent = traduzirErro(resposta.error);
+          return;
+        }
+        await c.auth.signOut(); // depois de trocar a senha, entra de novo com ela
+      } catch (erro) {
+        aviso.textContent = traduzirErro(erro);
+        return;
+      } finally {
+        ocupado(form, false);
+      }
+      porId("ir-login").href = montarUrl("login.html", { email: emailDaConta });
       form.hidden = true;
       porId("lead").hidden = true;
       porId("titulo").hidden = true;

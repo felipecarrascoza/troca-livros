@@ -12,8 +12,8 @@
 </head>
 <body class="auth-page" data-page="redefinir">
 
-  <!-- Página aberta pelo link do e-mail. No site de verdade, o link terá um código
-       secreto que vence depois de um tempo; aqui o botão de teste faz esse papel. -->
+  <!-- Página aberta pelo link do e-mail. O link do e-mail traz um código
+       secreto que vence depois de um tempo; o Supabase confere esse código. -->
   <main class="auth">
     <section class="auth-card" aria-labelledby="titulo">
       <h1 id="titulo">Criar nova senha</h1>
@@ -58,7 +58,7 @@
         <h2 class="auth-done" id="sucesso-titulo" tabindex="-1">Senha alterada!</h2>
         <p class="auth-lead">Agora você já pode entrar com a nova senha.</p>
         <div class="test-box" role="note">
-          <strong>Modo de teste.</strong> Nada foi salvo: o site ainda não tem banco de dados.
+          <strong>Modo de teste.</strong> A nova senha foi salva de verdade no Supabase.
         </div>
         <a class="btn-gradient btn-gradient--link" id="ir-login" href="login.html">Ir para o Log In</a>
       </div>
@@ -67,6 +67,8 @@
     <a class="auth-back" href="index.html">&larr; Voltar ao início</a>
   </main>
 
+  <script src="js/vendor/supabase-js-2.118.0.js"></script>
+  <script src="js/supabase-config.js"></script>
   <script src="js/auth.js"></script>
   <!-- DEV: atalhos de teste. Remover estas 2 linhas (e js/config.js, js/dev-atalhos.js) antes da versão final -->
   <script src="js/config.js"></script>
