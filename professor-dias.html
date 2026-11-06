@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dias na escola | Troca de Livros</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+<body class="auth-page" data-page="professor-dias">
+
+  <!-- Etapa só para professores (e-mail @santanna.g12.br).
+       Quem não é professor é mandado de volta pelo js/auth.js. -->
+  <main class="auth">
+    <section class="auth-card" aria-labelledby="titulo">
+      <p class="auth-step">Etapa 4 de 5 · Dias na escola</p>
+      <h1 id="titulo">Dias na escola</h1>
+      <p class="auth-lead">Em quais dias da semana você fica na escola?</p>
+
+      <form id="form-dias" novalidate>
+        <fieldset class="field" aria-describedby="dias-dica dias-erro">
+          <legend class="sr-only">Dias da semana</legend>
+          <div class="choices choices--list">
+            <label class="choice"><input type="checkbox" name="dia" value="seg"><span>Segunda-feira</span></label>
+            <label class="choice"><input type="checkbox" name="dia" value="ter"><span>Terça-feira</span></label>
+            <label class="choice"><input type="checkbox" name="dia" value="qua"><span>Quarta-feira</span></label>
+            <label class="choice"><input type="checkbox" name="dia" value="qui"><span>Quinta-feira</span></label>
+            <label class="choice"><input type="checkbox" name="dia" value="sex"><span>Sexta-feira</span></label>
+          </div>
+          <p class="field__hint" id="dias-dica">Marque todos os dias em que você está na escola.</p>
+          <p class="field__error" id="dias-erro" role="alert"></p>
+        </fieldset>
+
+        <button class="btn-gradient" type="submit">Continuar</button>
+      </form>
+
+      <div class="auth-actions auth-actions--center">
+        <a class="link-button" id="voltar" href="informacoes.html">&larr; Voltar</a>
+      </div>
+    </section>
+
+    <a class="auth-back" href="index.html">&larr; Voltar ao início</a>
+  </main>
+
+  <script src="js/auth.js"></script>
+</body>
+</html>

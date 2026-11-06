@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Horários na escola | Troca de Livros</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+<body class="auth-page" data-page="professor-horarios">
+
+  <!-- Etapa só para professores (e-mail @santanna.g12.br).
+       Os dias vêm da etapa anterior; cada dia escolhido ganha uma linha "das … às …". -->
+  <main class="auth">
+    <section class="auth-card" aria-labelledby="titulo">
+      <p class="auth-step">Etapa 5 de 5 · Horários</p>
+      <h1 id="titulo">Horários na escola</h1>
+      <p class="auth-lead">Informe o horário em que você fica na escola em cada dia.</p>
+
+      <form id="form-horarios" novalidate>
+        <div id="lista-horarios"></div>
+
+        <button class="link-button link-button--block" type="button" id="copiar">Usar o mesmo horário em todos os dias</button>
+        <p class="auth-status" id="status" role="status"></p>
+
+        <button class="btn-gradient" type="submit">Concluir cadastro</button>
+      </form>
+
+      <div class="auth-actions auth-actions--center" id="acoes-voltar">
+        <a class="link-button" id="voltar" href="professor-dias.html">&larr; Voltar</a>
+      </div>
+
+      <!-- Tela de sucesso: aparece no lugar do formulário -->
+      <div id="sucesso" hidden>
+        <div class="envelope envelope--ok" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg>
+        </div>
+        <h2 class="auth-done" id="sucesso-titulo" tabindex="-1">Cadastro concluído!</h2>
+        <p class="auth-lead" id="sucesso-texto"></p>
+        <ul class="resumo" id="resumo" aria-label="Seus horários na escola"></ul>
+        <div class="test-box" role="note">
+          <strong>Modo de teste.</strong> Nada foi salvo: o site ainda não tem banco de dados.
+        </div>
+        <a class="btn-gradient btn-gradient--link" href="index.html">Ir para o início</a>
+      </div>
+    </section>
+
+    <a class="auth-back" href="index.html">&larr; Voltar ao início</a>
+  </main>
+
+  <script src="js/auth.js"></script>
+</body>
+</html>
