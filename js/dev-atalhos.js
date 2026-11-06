@@ -87,6 +87,38 @@
     }];
   }
 
+  else if (pagina === "login") {
+    // Sem página depois do login: os botões só preenchem e enviam o formulário
+    var preencherLogin = function (email) {
+      return function () {
+        document.getElementById("email").value = email;
+        document.getElementById("senha").value = "teste1234";
+        enviar("form-login");
+      };
+    };
+    botoes = [
+      { texto: "Preencher como estudante", acao: preencherLogin(EMAIL_ESTUDANTE) },
+      { texto: "Preencher como professor", acao: preencherLogin(EMAIL_PROFESSOR) }
+    ];
+  } else if (pagina === "esqueci") {
+    botoes = [{
+      texto: "Preencher e enviar o link",
+      acao: function () {
+        document.getElementById("email").value = EMAIL_ESTUDANTE;
+        enviar("form-esqueci");
+      }
+    }];
+  } else if (pagina === "redefinir") {
+    botoes = [{
+      texto: "Preencher e salvar a nova senha",
+      acao: function () {
+        document.getElementById("senha").value = "novasenha1";
+        document.getElementById("senha2").value = "novasenha1";
+        enviar("form-redefinir");
+      }
+    }];
+  }
+
   if (!botoes) return;
 
   /* ---------- Caixa amarela (estilo e conteúdo) ---------- */

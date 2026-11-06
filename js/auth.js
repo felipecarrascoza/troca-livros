@@ -69,6 +69,7 @@
     return {
       email: p.get("email") || "",
       confirmado: p.get("confirmado") === "1",
+      link: p.get("link") === "1", // simula o link recebido por e-mail (redefinir senha)
       nome: p.get("nome") || "",
       dias: (p.get("dias") || "").split(",").filter(function (d) {
         return idsValidos.indexOf(d) !== -1;
@@ -78,6 +79,19 @@
 
   function primeiroNome(nome) {
     return nome.trim().split(/\s+/)[0];
+  }
+
+  // botões de mostrar/ocultar senha (o olhinho) de qualquer tela
+  function ativarBotoesSenha() {
+    document.querySelectorAll(".toggle-senha").forEach(function (botao) {
+      botao.addEventListener("click", function () {
+        var alvo = porId(botao.dataset.alvo);
+        var mostrar = alvo.type === "password";
+        alvo.type = mostrar ? "text" : "password";
+        botao.setAttribute("aria-pressed", String(mostrar));
+        botao.setAttribute("aria-label", mostrar ? "Ocultar senha" : "Mostrar senha");
+      });
+    });
   }
 
   /* ---------- Validações ---------- */
@@ -186,16 +200,7 @@
       });
     });
 
-    // botão de mostrar/ocultar senha
-    document.querySelectorAll(".toggle-senha").forEach(function (botao) {
-      botao.addEventListener("click", function () {
-        var alvo = porId(botao.dataset.alvo);
-        var mostrar = alvo.type === "password";
-        alvo.type = mostrar ? "text" : "password";
-        botao.setAttribute("aria-pressed", String(mostrar));
-        botao.setAttribute("aria-label", mostrar ? "Ocultar senha" : "Mostrar senha");
-      });
-    });
+    ativarBotoesSenha();
 
     form.addEventListener("submit", function (evento) {
       evento.preventDefault();
@@ -541,6 +546,159 @@
     });
   }
 
+  /* ---------- Página: log in ---------- */
+
+  function iniciarLogin() {
+    var form = porId("form-login");
+    var email = porId("email");
+    var senha = porId("senha");
+    var aviso = porId("aviso-teste");
+
+    // ao voltar de "senha alterada", o e-mail já vem preenchido
+    var dados = lerEndereco();
+    var inicial = validarEmail(dados.email);
+    if (inicial.ok) email.value = inicial.email;
+
+    function checarEmail() {
+      var r = validarEmail(email.value);
+      mostrarErro(email, r.ok ? "" : r.mensagem);
+      return r.ok;
+    }
+    function checarSenha() {
+      // no login só pedimos que a senha seja digitada: quem confere é o servidor
+      var msg = senha.value ? "" : "Digite a sua senha.";
+      mostrarErro(senha, msg);
+      return !msg;
+    }
+
+    email.addEventListener("blur", checarEmail);
+    senha.addEventListener("blur", checarSenha);
+    [email, senha].forEach(function (campo) {
+      campo.addEventListener("input", function () {
+        aviso.hidden = true;
+        if (campo.getAttribute("aria-invalid") === "true") {
+          if (campo === email) checarEmail();
+          else checarSenha();
+        }
+      });
+    });
+    ativarBotoesSenha();
+
+    form.addEventListener("submit", function (evento) {
+      evento.preventDefault();
+      var okEmail = checarEmail();
+      var okSenha = checarSenha();
+      if (!okEmail) return email.focus();
+      if (!okSenha) return senha.focus();
+
+      // TODO: aqui o servidor confere e-mail e senha de verdade e abre a conta da pessoa.
+      aviso.hidden = false;
+    });
+  }
+
+  /* ---------- Página: esqueci minha senha ---------- */
+
+  function iniciarEsqueci() {
+    var form = porId("form-esqueci");
+    var email = porId("email");
+    var enviado = porId("enviado");
+    var ultimo = null;
+
+    function checarEmail() {
+      var r = validarEmail(email.value);
+      mostrarErro(email, r.ok ? "" : r.mensagem);
+      return r;
+    }
+    email.addEventListener("blur", checarEmail);
+    email.addEventListener("input", function () {
+      if (email.getAttribute("aria-invalid") === "true") checarEmail();
+    });
+
+    form.addEventListener("submit", function (evento) {
+      evento.preventDefault();
+      var r = checarEmail();
+      if (!r.ok) return email.focus();
+
+      // TODO: aqui o servidor envia o e-mail com o link. A resposta é a MESMA exista ou
+      // não uma conta com esse e-mail, para ninguém descobrir quem tem cadastro.
+      ultimo = r.email;
+      porId("email-mostrado").textContent = r.email;
+      form.hidden = true;
+      porId("lead").hidden = true;
+      porId("titulo").hidden = true;
+      enviado.hidden = false;
+      porId("enviado-titulo").focus();
+    });
+
+    // Em vez de clicar no link do e-mail, o botão de teste faz o mesmo caminho
+    porId("simular-reset").addEventListener("click", function () {
+      window.location.href = montarUrl("redefinir-senha.html", { email: ultimo, link: "1" });
+    });
+
+    porId("outro-email").addEventListener("click", function () {
+      enviado.hidden = true;
+      form.hidden = false;
+      porId("lead").hidden = false;
+      porId("titulo").hidden = false;
+      email.value = "";
+      email.focus();
+    });
+  }
+
+  /* ---------- Página: criar nova senha ---------- */
+
+  function iniciarRedefinir() {
+    var dados = lerEndereco();
+    var r = validarEmail(dados.email);
+    // sem e-mail válido ou sem o "link" do e-mail, volta para pedir o link
+    if (!r.ok || !dados.link) {
+      window.location.replace("esqueci-senha.html");
+      return;
+    }
+
+    var form = porId("form-redefinir");
+    var senha = porId("senha");
+    var senha2 = porId("senha2");
+
+    function checarSenha() {
+      var msg = validarSenha(senha.value);
+      mostrarErro(senha, msg);
+      return !msg;
+    }
+    function checarSenha2() {
+      var msg = !senha2.value ? "Repita a senha para confirmar." : senha2.value !== senha.value ? "As senhas não são iguais." : "";
+      mostrarErro(senha2, msg);
+      return !msg;
+    }
+    senha.addEventListener("blur", checarSenha);
+    senha2.addEventListener("blur", checarSenha2);
+    [senha, senha2].forEach(function (campo) {
+      campo.addEventListener("input", function () {
+        if (campo.getAttribute("aria-invalid") === "true") {
+          if (campo === senha) checarSenha();
+          else checarSenha2();
+        }
+      });
+    });
+    ativarBotoesSenha();
+
+    form.addEventListener("submit", function (evento) {
+      evento.preventDefault();
+      var okSenha = checarSenha();
+      var okSenha2 = checarSenha2();
+      if (!okSenha) return senha.focus();
+      if (!okSenha2) return senha2.focus();
+
+      // TODO: aqui o servidor confere o código do link e salva a nova senha.
+      porId("ir-login").href = montarUrl("login.html", { email: r.email });
+      form.hidden = true;
+      porId("lead").hidden = true;
+      porId("titulo").hidden = true;
+      porId("sucesso").hidden = false;
+      porId("sucesso-titulo").focus();
+    });
+  }
+
   /* ---------- Começar ---------- */
 
   var pagina = document.body.dataset.page;
@@ -549,4 +707,7 @@
   else if (pagina === "informacoes") iniciarInformacoes();
   else if (pagina === "professor-dias") iniciarProfessorDias();
   else if (pagina === "professor-horarios") iniciarProfessorHorarios();
+  else if (pagina === "login") iniciarLogin();
+  else if (pagina === "esqueci") iniciarEsqueci();
+  else if (pagina === "redefinir") iniciarRedefinir();
 })();

@@ -95,6 +95,22 @@ main.auth {
   text-decoration: underline;
 }
 
+/* "Esqueci minha senha", logo abaixo do campo de senha */
+.auth-forgot {
+  margin: -8px 0 24px;
+  text-align: right;
+  font-size: 0.85rem;
+}
+
+.auth-forgot a {
+  color: var(--verde-azul-700);
+  font-weight: 600;
+}
+
+.test-box--login {
+  margin: 20px 0 0;
+}
+
 .auth-switch {
   margin-top: 24px;
   text-align: center;

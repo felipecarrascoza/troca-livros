@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Esqueci minha senha | Troca de Livros</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+<body class="auth-page" data-page="esqueci">
+
+  <main class="auth">
+    <section class="auth-card" aria-labelledby="titulo">
+      <h1 id="titulo">Esqueci minha senha</h1>
+      <p class="auth-lead" id="lead">Digite o seu e-mail da escola e enviaremos um link para criar uma nova senha.</p>
+
+      <form id="form-esqueci" novalidate>
+        <div class="field">
+          <label for="email">E-mail da escola</label>
+          <div class="field__control">
+            <svg class="field__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+            <input id="email" name="email" type="email" inputmode="email" autocomplete="email" spellcheck="false"
+                   placeholder="nome.sobrenome@alunos.g12.br" aria-describedby="email-erro" required>
+          </div>
+          <p class="field__error" id="email-erro" role="alert"></p>
+        </div>
+
+        <button class="btn-gradient" type="submit">Enviar link</button>
+      </form>
+
+      <!-- Depois de enviar: mesma mensagem exista ou não conta com esse e-mail (segurança) -->
+      <div id="enviado" hidden>
+        <div class="envelope" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+        </div>
+        <h2 class="auth-done" id="enviado-titulo" tabindex="-1">Confira seu e-mail</h2>
+        <p class="auth-lead">Se <strong id="email-mostrado"></strong> estiver cadastrado, enviaremos um link para criar uma nova senha.<br>Olhe também na caixa de spam.</p>
+
+        <!-- Aviso de teste: apague esta caixa quando o envio de e-mail for real. -->
+        <div class="test-box" role="note">
+          <strong>Modo de teste.</strong> O site ainda não tem servidor, então <strong>nenhum e-mail foi enviado de verdade</strong>.
+          Use o botão abaixo para fingir que você clicou no link.
+        </div>
+
+        <button class="btn-gradient" type="button" id="simular-reset">Simular clique no link do e-mail</button>
+        <div class="auth-actions auth-actions--center">
+          <button class="link-button" type="button" id="outro-email">Usar outro e-mail</button>
+        </div>
+      </div>
+
+      <div class="auth-actions auth-actions--center">
+        <a class="link-button" href="login.html">&larr; Voltar ao Log In</a>
+      </div>
+    </section>
+
+    <a class="auth-back" href="index.html">&larr; Voltar ao início</a>
+  </main>
+
+  <script src="js/auth.js"></script>
+  <!-- DEV: atalhos de teste. Remover estas 2 linhas (e js/config.js, js/dev-atalhos.js) antes da versão final -->
+  <script src="js/config.js"></script>
+  <script src="js/dev-atalhos.js"></script>
+</body>
+</html>
