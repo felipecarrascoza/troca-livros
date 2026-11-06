@@ -30,7 +30,18 @@
           <p class="field__error" id="nome-erro" role="alert"></p>
         </div>
 
-        <!-- Os dois blocos abaixo só aparecem para alunos (e-mail @alunos.g12.br) -->
+        <!-- Os três blocos abaixo só aparecem para alunos (e-mail @alunos.g12.br).
+             Professores (e-mail @santanna.g12.br) não veem programa, ano nem período. -->
+        <fieldset class="field somente-aluno" aria-describedby="programa-dica programa-erro">
+          <legend>Qual é o seu programa?</legend>
+          <div class="choices choices--2">
+            <label class="choice"><input type="radio" name="programa" value="Brasileiro"><span>Brasileiro</span></label>
+            <label class="choice"><input type="radio" name="programa" value="Internacional"><span>Internacional</span></label>
+          </div>
+          <p class="field__hint" id="programa-dica">Programa de ensino da escola em que você estuda.</p>
+          <p class="field__error" id="programa-erro" role="alert"></p>
+        </fieldset>
+
         <div class="field somente-aluno">
           <label for="ano">Ano escolar</label>
           <div class="field__control">

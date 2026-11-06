@@ -219,6 +219,11 @@
       mostrarErro(ano, msg);
       return !msg;
     }
+    function programaEscolhido() {
+      var marcado = document.querySelector("input[name='programa']:checked");
+      porId("programa-erro").textContent = marcado ? "" : "Escolha o seu programa.";
+      return marcado ? marcado.value : "";
+    }
     function periodoEscolhido() {
       var marcado = document.querySelector("input[name='periodo']:checked");
       porId("periodo-erro").textContent = marcado ? "" : "Escolha o seu período.";
@@ -227,6 +232,9 @@
 
     nome.addEventListener("blur", checarNome);
     ano.addEventListener("change", checarAno);
+    document.querySelectorAll("input[name='programa']").forEach(function (radio) {
+      radio.addEventListener("change", programaEscolhido);
+    });
     document.querySelectorAll("input[name='periodo']").forEach(function (radio) {
       radio.addEventListener("change", periodoEscolhido);
     });
@@ -234,10 +242,12 @@
     form.addEventListener("submit", function (evento) {
       evento.preventDefault();
       var okNome = checarNome();
+      var programa = ehAluno ? programaEscolhido() : "-";
       var okAno = ehAluno ? checarAno() : true;
       var periodo = ehAluno ? periodoEscolhido() : "-";
 
       if (!okNome) return nome.focus();
+      if (!programa) return document.querySelector("input[name='programa']").focus();
       if (!okAno) return ano.focus();
       if (!periodo) return document.querySelector("input[name='periodo']").focus();
 
