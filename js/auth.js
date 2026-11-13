@@ -1,18 +1,24 @@
 /* ==========================================================
-   Telas de conta (cadastro, confirmar e-mail, informações e,
-   para professores, dias e horários na escola, login e senha).
+   Telas de conta (cadastro, informações e, para professores,
+   dias e horários na escola, e login).
 
-   Agora tudo fala com o Supabase de verdade (js/supabase-config.js):
-   a conta, o e-mail de confirmação, o login, a troca de senha e o
-   perfil são guardados no servidor. A senha nunca fica salva no site.
-   As etapas dependem da SESSÃO de quem entrou, não de dados na URL.
+   Tudo fala com o Supabase de verdade (js/supabase-config.js):
+   a conta, o login e o perfil são guardados no servidor. A senha
+   nunca fica salva no site. As etapas dependem da SESSÃO de quem
+   entrou, não de dados na URL.
+
+   VERSÃO DE DEMONSTRAÇÃO: não há confirmação de e-mail nem
+   "esqueci minha senha". O projeto no Supabase está com "Confirm
+   email" DESLIGADO, então o cadastro já abre a sessão. Essas telas
+   foram guardadas na branch "guardado-confirmacao-e-senha" do GitHub.
+   Para trazê-las de volta, veja docs/RESTAURAR-EMAIL-E-SENHA.md.
 
    Caminhos:
    - Aluno (@alunos.g12.br):
-       cadastro -> confirme-email -> informacoes            (3 etapas)
+       cadastro -> informacoes                              (2 etapas)
    - Professor (@santanna.g12.br):
-       cadastro -> confirme-email -> informacoes
-                -> professor-dias -> professor-horarios     (5 etapas)
+       cadastro -> informacoes
+                -> professor-dias -> professor-horarios     (4 etapas)
    ========================================================== */
 (function () {
   "use strict";
@@ -51,25 +57,6 @@
     if (el) el.textContent = texto;
   }
 
-  // Endereço completo de uma página do site (serve também para subpastas do GitHub Pages)
-  function urlDaPagina(pagina) {
-    return new URL(pagina, window.location.href).href;
-  }
-
-  // Monta um endereço de página com dados no final (?email=...)
-  // Só usamos isto para coisas que não são segredo (ex.: mostrar o e-mail digitado).
-  function montarUrl(pagina, dados) {
-    var p = new URLSearchParams();
-    Object.keys(dados).forEach(function (chave) {
-      if (dados[chave] !== undefined && dados[chave] !== "") p.set(chave, dados[chave]);
-    });
-    return pagina + "?" + p.toString();
-  }
-
-  function emailDoEndereco() {
-    return new URLSearchParams(window.location.search).get("email") || "";
-  }
-
   function primeiroNome(nome) {
     return nome.trim().split(/\s+/)[0];
   }
@@ -105,7 +92,12 @@
     var status = erro && erro.status;
     if (!erro) return "";
     if (texto.indexOf("invalid login") !== -1) return "E-mail ou senha incorretos.";
-    if (texto.indexOf("not confirmed") !== -1) return "Você ainda não confirmou o e-mail.";
+    if (texto.indexOf("already registered") !== -1 || texto.indexOf("already been registered") !== -1) {
+      return "Esse e-mail já tem conta. Use o Log In.";
+    }
+    if (texto.indexOf("not confirmed") !== -1) {
+      return "Essa conta ainda não foi confirmada. Avise os desenvolvedores do site.";
+    }
     if (status === 429 || texto.indexOf("rate limit") !== -1 || texto.indexOf("too many") !== -1 || texto.indexOf("security purposes") !== -1) {
       return "Muitas tentativas. Espere alguns minutos e tente de novo.";
     }
@@ -283,7 +275,7 @@
     // professor tem mais etapas que aluno: o contador acompanha o e-mail digitado
     email.addEventListener("input", function () {
       var r = validarEmail(email.value);
-      definirEtapa("Etapa 1 de " + (r.ok && r.papel === "professor" ? 5 : 3) + " · Cadastro");
+      definirEtapa("Etapa 1 de " + (r.ok && r.papel === "professor" ? 4 : 2) + " · Cadastro");
     });
 
     // depois do primeiro erro, a mensagem some assim que a pessoa corrige
@@ -319,22 +311,21 @@
 
       ocupado(form, true, "Criando conta...");
       try {
-        // O servidor confere de novo se o e-mail é da escola e envia o e-mail de confirmação.
-        var resposta = await c.auth.signUp({
-          email: r.email,
-          password: senha.value,
-          options: { emailRedirectTo: urlDaPagina("informacoes.html") }
-        });
+        // O servidor confere de novo se o e-mail é da escola.
+        // Na demonstração o projeto NÃO exige confirmação por e-mail: a sessão já vem aberta.
+        var resposta = await c.auth.signUp({ email: r.email, password: senha.value });
         if (resposta.error) {
           aviso.textContent = traduzirErro(resposta.error);
           return;
         }
-        // Se o projeto não exigir confirmação de e-mail, a sessão já vem aberta
         if (resposta.data && resposta.data.session) {
           window.location.href = "informacoes.html";
           return;
         }
-        window.location.href = montarUrl("confirme-email.html", { email: r.email });
+        // Sem sessão = o projeto ainda está pedindo confirmação por e-mail (opção "Confirm email"
+        // ligada no painel do Supabase), e a demonstração não envia e-mails.
+        aviso.textContent = "A conta foi criada, mas o servidor ainda está pedindo confirmação por e-mail, " +
+          "e a demonstração não envia e-mails. Avise os desenvolvedores do site.";
       } catch (erro) {
         aviso.textContent = traduzirErro(erro);
       } finally {
@@ -343,84 +334,18 @@
     });
   }
 
-  /* ---------- Página: confirmar e-mail ---------- */
-
-  function iniciarConfirmacao() {
-    // Aqui ainda não existe sessão (a conta só vale depois do clique no link do e-mail).
-    // O e-mail vem no endereço só para ser mostrado e usado no reenvio.
-    var r = validarEmail(emailDoEndereco());
-    if (!r.ok) {
-      window.location.replace("cadastro.html");
-      return;
-    }
-    porId("email-mostrado").textContent = r.email;
-    definirEtapa("Etapa 2 de " + (r.papel === "professor" ? 5 : 3) + " · Confirmar e-mail");
-
-    var status = porId("status");
-    var reenviar = porId("reenviar");
-    var espera = null;
-
-    // Só vale se a pessoa já estiver com a sessão aberta; senão, só o link do e-mail serve
-    porId("simular-link").addEventListener("click", async function () {
-      var conta = await carregarConta();
-      if (conta) {
-        window.location.href = "informacoes.html";
-      } else {
-        status.textContent = "Ainda sem sessão: clique no link que chegou no seu e-mail.";
-      }
-    });
-
-    function contar() {
-      var segundos = 30;
-      reenviar.disabled = true;
-      reenviar.textContent = "Reenviar em " + segundos + "s";
-      espera = window.setInterval(function () {
-        segundos -= 1;
-        reenviar.textContent = "Reenviar em " + segundos + "s";
-        if (segundos <= 0) {
-          window.clearInterval(espera);
-          reenviar.disabled = false;
-          reenviar.textContent = "Reenviar e-mail";
-        }
-      }, 1000);
-    }
-
-    reenviar.addEventListener("click", async function () {
-      var c = obterCliente();
-      if (!c) {
-        status.textContent = "Não foi possível carregar o servidor. Recarregue a página.";
-        return;
-      }
-      reenviar.disabled = true;
-      status.textContent = "Enviando...";
-      try {
-        var resposta = await c.auth.resend({
-          type: "signup",
-          email: r.email,
-          options: { emailRedirectTo: urlDaPagina("informacoes.html") }
-        });
-        if (resposta.error) {
-          status.textContent = traduzirErro(resposta.error);
-          reenviar.disabled = false;
-          return;
-        }
-        status.textContent = "Enviamos o e-mail de novo. Olhe também na caixa de spam.";
-        contar();
-      } catch (erro) {
-        status.textContent = traduzirErro(erro);
-        reenviar.disabled = false;
-      }
-    });
-  }
-
   /* ---------- Página: informações adicionais ---------- */
 
   async function iniciarInformacoes() {
-    // enquanto a conta carrega, um envio apressado não pode recarregar a página
+    // enquanto a conta carrega, um envio apressado não pode recarregar a página,
+    // e o botão fica desligado para o clique não ser ignorado sem aviso
     porId("form-informacoes").addEventListener("submit", function (e) { e.preventDefault(); });
-    // Só entra aqui quem clicou no link do e-mail (ou fez login): precisa de sessão.
+    var botaoEnviar = porId("form-informacoes").querySelector("button[type=submit]");
+    botaoEnviar.disabled = true;
+    // Só entra aqui quem acabou de se cadastrar (ou fez login): precisa de sessão.
     var conta = await exigirConta();
     if (!conta) return;
+    botaoEnviar.disabled = false;
     var perfil = conta.perfil;
 
     var ehAluno = perfil.papel === "aluno";
@@ -434,14 +359,16 @@
       document.querySelectorAll(".somente-aluno").forEach(function (bloco) {
         bloco.hidden = true;
       });
-      definirEtapa("Etapa 3 de 5 · Informações");
+      definirEtapa("Etapa 2 de 4 · Informações");
       form.querySelector("button[type=submit]").textContent = "Continuar";
     }
     // se a pessoa já preencheu antes (ou voltou da etapa seguinte), os dados aparecem
-    if (perfil.nome) nome.value = perfil.nome;
+    // (o que a pessoa já digitou ou escolheu enquanto a página carregava não é apagado)
+    if (perfil.nome && !nome.value) nome.value = perfil.nome;
     if (ehAluno) {
-      if (perfil.ano) ano.value = perfil.ano;
+      if (perfil.ano && !ano.value) ano.value = perfil.ano;
       [["programa", perfil.programa], ["periodo", perfil.periodo]].forEach(function (par) {
+        if (document.querySelector("input[name='" + par[0] + "']:checked")) return;
         var radio = document.querySelector("input[name='" + par[0] + "'][value='" + par[1] + "']");
         if (radio) radio.checked = true;
       });
@@ -533,6 +460,8 @@
 
   async function iniciarProfessorDias() {
     porId("form-dias").addEventListener("submit", function (e) { e.preventDefault(); });
+    var botaoEnviar = porId("form-dias").querySelector("button[type=submit]");
+    botaoEnviar.disabled = true; // liga de novo só no fim, quando tudo estiver pronto
     var ctx = await exigirProfessor();
     if (!ctx) return;
 
@@ -547,8 +476,10 @@
     var caixas = document.querySelectorAll("input[name='dia']");
 
     // ao voltar da etapa dos horários, os dias já escolhidos continuam marcados
+    // (se a pessoa já clicou em algum dia enquanto a página carregava, o clique dela vale)
+    var jaMarcou = Array.prototype.some.call(caixas, function (caixa) { return caixa.checked; });
     caixas.forEach(function (caixa) {
-      caixa.checked = diasMarcados.indexOf(caixa.value) !== -1;
+      if (!jaMarcou) caixa.checked = diasMarcados.indexOf(caixa.value) !== -1;
       caixa.addEventListener("change", function () {
         if (selecionados().length) erro.textContent = "";
       });
@@ -571,6 +502,8 @@
       guardarDias(dias);
       window.location.href = "professor-horarios.html";
     });
+
+    botaoEnviar.disabled = false; // agora o clique já tem quem o atenda
   }
 
   /* ---------- Página: professor, horários na escola ---------- */
@@ -762,10 +695,6 @@
     var senha = porId("senha");
     var aviso = porId("aviso-teste");
 
-    // ao voltar de "senha alterada", o e-mail já vem preenchido
-    var inicial = validarEmail(emailDoEndereco());
-    if (inicial.ok) email.value = inicial.email;
-
     function checarEmail() {
       var r = validarEmail(email.value);
       mostrarErro(email, r.ok ? "" : r.mensagem);
@@ -832,11 +761,6 @@
         var emailLimpo = email.value.trim().toLowerCase();
         var resposta = await c.auth.signInWithPassword({ email: emailLimpo, password: senha.value });
         if (resposta.error) {
-          if (String(resposta.error.message || "").toLowerCase().indexOf("not confirmed") !== -1) {
-            // ainda não confirmou: leva para a tela que reenvia o e-mail
-            window.location.href = montarUrl("confirme-email.html", { email: emailLimpo });
-            return;
-          }
           erroForm.textContent = traduzirErro(resposta.error);
           return;
         }
@@ -859,161 +783,12 @@
     });
   }
 
-  /* ---------- Página: esqueci minha senha ---------- */
-
-  function iniciarEsqueci() {
-    var form = porId("form-esqueci");
-    var email = porId("email");
-    var enviado = porId("enviado");
-    var ultimo = null;
-
-    function checarEmail() {
-      var r = validarEmail(email.value);
-      mostrarErro(email, r.ok ? "" : r.mensagem);
-      return r;
-    }
-    email.addEventListener("blur", checarEmail);
-    email.addEventListener("input", function () {
-      if (email.getAttribute("aria-invalid") === "true") checarEmail();
-    });
-
-    form.addEventListener("submit", async function (evento) {
-      evento.preventDefault();
-      var r = checarEmail();
-      if (!r.ok) return email.focus();
-
-      var c = obterCliente();
-      var erroForm = avisoDoFormulario(form);
-      erroForm.textContent = "";
-      if (!c) {
-        erroForm.textContent = "Não foi possível carregar o servidor. Recarregue a página.";
-        return;
-      }
-
-      // A resposta na tela é a MESMA exista ou não uma conta com esse e-mail,
-      // para ninguém descobrir quem tem cadastro. Só mostramos erro de limite ou de internet.
-      ocupado(form, true, "Enviando...");
-      try {
-        var resposta = await c.auth.resetPasswordForEmail(r.email, {
-          redirectTo: urlDaPagina("redefinir-senha.html")
-        });
-        if (resposta.error && (resposta.error.status === 429 || !resposta.error.status)) {
-          erroForm.textContent = traduzirErro(resposta.error);
-          return;
-        }
-      } catch (erro) {
-        erroForm.textContent = traduzirErro(erro);
-        return;
-      } finally {
-        ocupado(form, false);
-      }
-
-      ultimo = r.email;
-      porId("email-mostrado").textContent = r.email;
-      form.hidden = true;
-      porId("lead").hidden = true;
-      porId("titulo").hidden = true;
-      enviado.hidden = false;
-      porId("enviado-titulo").focus();
-    });
-
-    // Em vez de clicar no link do e-mail, o botão de teste faz o mesmo caminho
-    porId("simular-reset").addEventListener("click", function () {
-      // não dá para fingir o clique: o link de verdade só chega por e-mail
-      var botao = porId("simular-reset");
-      botao.textContent = "Use o link que chegou no seu e-mail";
-      botao.disabled = true;
-    });
-
-    porId("outro-email").addEventListener("click", function () {
-      enviado.hidden = true;
-      form.hidden = false;
-      porId("lead").hidden = false;
-      porId("titulo").hidden = false;
-      email.value = "";
-      email.focus();
-    });
-  }
-
-  /* ---------- Página: criar nova senha ---------- */
-
-  async function iniciarRedefinir() {
-    // O link do e-mail abre esta página com uma sessão de recuperação. Sem ela, pede um link novo.
-    var c = obterCliente();
-    var sessao = c ? (await c.auth.getSession()).data.session : null;
-    if (!sessao) {
-      window.location.replace("esqueci-senha.html");
-      return;
-    }
-    var emailDaConta = sessao.user.email;
-
-    var form = porId("form-redefinir");
-    var senha = porId("senha");
-    var senha2 = porId("senha2");
-
-    function checarSenha() {
-      var msg = validarSenha(senha.value);
-      mostrarErro(senha, msg);
-      return !msg;
-    }
-    function checarSenha2() {
-      var msg = !senha2.value ? "Repita a senha para confirmar." : senha2.value !== senha.value ? "As senhas não são iguais." : "";
-      mostrarErro(senha2, msg);
-      return !msg;
-    }
-    senha.addEventListener("blur", checarSenha);
-    senha2.addEventListener("blur", checarSenha2);
-    [senha, senha2].forEach(function (campo) {
-      campo.addEventListener("input", function () {
-        if (campo.getAttribute("aria-invalid") === "true") {
-          if (campo === senha) checarSenha();
-          else checarSenha2();
-        }
-      });
-    });
-    ativarBotoesSenha();
-
-    form.addEventListener("submit", async function (evento) {
-      evento.preventDefault();
-      var okSenha = checarSenha();
-      var okSenha2 = checarSenha2();
-      if (!okSenha) return senha.focus();
-      if (!okSenha2) return senha2.focus();
-
-      var aviso = avisoDoFormulario(form);
-      aviso.textContent = "";
-      ocupado(form, true, "Salvando...");
-      try {
-        var resposta = await c.auth.updateUser({ password: senha.value });
-        if (resposta.error) {
-          aviso.textContent = traduzirErro(resposta.error);
-          return;
-        }
-        await c.auth.signOut(); // depois de trocar a senha, entra de novo com ela
-      } catch (erro) {
-        aviso.textContent = traduzirErro(erro);
-        return;
-      } finally {
-        ocupado(form, false);
-      }
-      porId("ir-login").href = montarUrl("login.html", { email: emailDaConta });
-      form.hidden = true;
-      porId("lead").hidden = true;
-      porId("titulo").hidden = true;
-      porId("sucesso").hidden = false;
-      porId("sucesso-titulo").focus();
-    });
-  }
-
   /* ---------- Começar ---------- */
 
   var pagina = document.body.dataset.page;
   if (pagina === "cadastro") iniciarCadastro();
-  else if (pagina === "confirme") iniciarConfirmacao();
   else if (pagina === "informacoes") iniciarInformacoes();
   else if (pagina === "professor-dias") iniciarProfessorDias();
   else if (pagina === "professor-horarios") iniciarProfessorHorarios();
   else if (pagina === "login") iniciarLogin();
-  else if (pagina === "esqueci") iniciarEsqueci();
-  else if (pagina === "redefinir") iniciarRedefinir();
 })();

@@ -524,3 +524,22 @@ h3 {
     flex: 1 1 100%;
   }
 }
+
+/* ---------- Selo "Versão de demonstração" ----------
+   Para tirar na versão final: apague este bloco e as linhas marcadas
+   com "DEMO:" nos arquivos .html. */
+.demo-selo {
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  z-index: 90;
+  margin: 0;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(11, 59, 63, 0.92);
+  color: var(--verde-azul-100);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+}

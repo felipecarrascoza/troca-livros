@@ -46,7 +46,7 @@
   var botoes = null;
 
   if (pagina === "cadastro") {
-    // Pula cadastro e confirmação de e-mail: vai direto às informações
+    // Vai direto às informações (só funciona se houver uma sessão aberta)
     botoes = [
       { texto: "Seguir como estudante", acao: function () { ir("informacoes.html", { email: EMAIL_ESTUDANTE, confirmado: "1" }); } },
       { texto: "Seguir como professor", acao: function () { ir("informacoes.html", { email: EMAIL_PROFESSOR, confirmado: "1" }); } }
@@ -100,23 +100,6 @@
       { texto: "Preencher como estudante", acao: preencherLogin(EMAIL_ESTUDANTE) },
       { texto: "Preencher como professor", acao: preencherLogin(EMAIL_PROFESSOR) }
     ];
-  } else if (pagina === "esqueci") {
-    botoes = [{
-      texto: "Preencher e enviar o link",
-      acao: function () {
-        document.getElementById("email").value = EMAIL_ESTUDANTE;
-        enviar("form-esqueci");
-      }
-    }];
-  } else if (pagina === "redefinir") {
-    botoes = [{
-      texto: "Preencher e salvar a nova senha",
-      acao: function () {
-        document.getElementById("senha").value = "novasenha1";
-        document.getElementById("senha2").value = "novasenha1";
-        enviar("form-redefinir");
-      }
-    }];
   }
 
   if (!botoes) return;
