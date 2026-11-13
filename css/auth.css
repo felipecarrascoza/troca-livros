@@ -448,3 +448,71 @@ main.auth {
 .logado p {
   margin: 6px 0 10px;
 }
+
+/* ---------- Cadastrar livro ---------- */
+.field textarea {
+  width: 100%;
+  min-height: 76px;
+  padding: 10px 12px;
+  border: 2px solid var(--borda);
+  border-radius: 10px;
+  background: transparent;
+  font: inherit;
+  font-size: 1rem;
+  color: var(--texto);
+  resize: vertical;
+}
+
+.field textarea:focus {
+  outline: none;
+  border-color: var(--verde-azul-600);
+}
+
+.field textarea::placeholder {
+  color: #5f7775;
+}
+
+/* dados que já estão no catálogo: só leitura */
+.field input[readonly] {
+  color: var(--texto-suave);
+  cursor: default;
+}
+
+.resultado {
+  margin: 0 0 20px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--verde-azul-100);
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--verde-azul-900);
+}
+
+.livro-cabeca {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.livro-cabeca img {
+  flex: none;
+  width: 72px;
+  height: 104px;
+  object-fit: cover;
+  border: 1px solid var(--borda);
+  border-radius: 6px;
+  background: var(--verde-azul-50);
+}
+
+.livro-isbn {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--texto-suave);
+}
+
+.livro-isbn strong {
+  color: var(--texto);
+  word-break: break-all;
+}

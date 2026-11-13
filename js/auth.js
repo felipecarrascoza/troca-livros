@@ -724,7 +724,7 @@
     function mostrarEntrou(conta) {
       var nome = conta.perfil.nome ? primeiroNome(conta.perfil.nome) : conta.perfil.email;
       porId("logado-titulo").textContent = "Você entrou, " + nome + "!";
-      porId("logado-texto").textContent = "Ainda não existe uma página depois do login. Ela será a próxima etapa do site.";
+      porId("logado-texto").textContent = "Você já pode cadastrar os livros que quer trocar ou doar.";
       form.hidden = true;
       porId("aviso-login").hidden = false;
       aviso.hidden = false;

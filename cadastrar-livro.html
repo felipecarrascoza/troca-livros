@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cadastrar livro | Troca de Livros</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+<body class="auth-page" data-page="cadastrar-livro">
+
+  <!-- DEMO: selo de demonstração. Remover esta linha (e o bloco .demo-selo do css/style.css) na versão final -->
+  <p class="demo-selo" role="note">Versão de demonstração</p>
+
+  <main class="auth">
+    <section class="auth-card" aria-labelledby="titulo">
+      <h1 id="titulo">Cadastrar livro</h1>
+      <p class="auth-lead" id="lead">Digite o ISBN e a gente preenche os dados do livro para você.</p>
+
+      <!-- Passo 1: o ISBN -->
+      <form id="form-isbn" novalidate>
+        <div class="field">
+          <label for="isbn">ISBN do livro</label>
+          <div class="field__control">
+            <svg class="field__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5v14M8 5v14M12 5v14M16 5v14M20 5v14"/></svg>
+            <input id="isbn" name="isbn" type="text" inputmode="numeric" autocomplete="off" spellcheck="false"
+                   maxlength="24" placeholder="978-85-209-1767-1" aria-describedby="isbn-dica isbn-erro" required>
+          </div>
+          <p class="field__hint" id="isbn-dica">Fica na contracapa, perto do código de barras. Tem 10 ou 13 números, e pode ter hífens.</p>
+          <p class="field__error" id="isbn-erro" role="alert"></p>
+        </div>
+
+        <button class="btn-gradient" type="submit" id="botao-buscar">Buscar livro</button>
+      </form>
+
+      <!-- Passo 2: conferir os dados e dizer como está o seu exemplar -->
+      <form id="form-livro" novalidate hidden>
+        <p class="resultado" id="resultado" role="status" tabindex="-1"></p>
+
+        <div class="livro-cabeca">
+          <img id="capa" alt="Capa do livro" width="72" height="104" referrerpolicy="no-referrer" hidden>
+          <p class="livro-isbn">ISBN <strong id="isbn-mostrado"></strong><br>
+            <button class="link-button" type="button" id="trocar-isbn">Buscar outro ISBN</button></p>
+        </div>
+
+        <div class="field">
+          <label for="titulo-livro">Título</label>
+          <div class="field__control">
+            <input id="titulo-livro" name="titulo" type="text" maxlength="300" aria-describedby="titulo-livro-erro" required>
+          </div>
+          <p class="field__error" id="titulo-livro-erro" role="alert"></p>
+        </div>
+
+        <div class="field">
+          <label for="autores">Autor(es)</label>
+          <div class="field__control">
+            <input id="autores" name="autores" type="text" maxlength="300" aria-describedby="autores-erro">
+          </div>
+          <p class="field__error" id="autores-erro" role="alert"></p>
+        </div>
+
+        <div class="field">
+          <label for="editora">Editora</label>
+          <div class="field__control">
+            <input id="editora" name="editora" type="text" maxlength="200" aria-describedby="editora-erro">
+          </div>
+          <p class="field__error" id="editora-erro" role="alert"></p>
+        </div>
+
+        <div class="horario__linha">
+          <div class="field">
+            <label for="ano">Ano</label>
+            <div class="field__control">
+              <input id="ano" name="ano" type="text" inputmode="numeric" maxlength="4" aria-describedby="ano-erro">
+            </div>
+            <p class="field__error" id="ano-erro" role="alert"></p>
+          </div>
+          <div class="field">
+            <label for="paginas">Páginas</label>
+            <div class="field__control">
+              <input id="paginas" name="paginas" type="text" inputmode="numeric" maxlength="5" aria-describedby="paginas-erro">
+            </div>
+            <p class="field__error" id="paginas-erro" role="alert"></p>
+          </div>
+        </div>
+
+        <fieldset class="field" aria-describedby="estado-erro">
+          <legend>Como está o seu exemplar?</legend>
+          <div class="choices choices--2">
+            <label class="choice"><input type="radio" name="estado" value="novo"><span>Novo</span></label>
+            <label class="choice"><input type="radio" name="estado" value="bom"><span>Bom</span></label>
+            <label class="choice"><input type="radio" name="estado" value="regular"><span>Regular</span></label>
+            <label class="choice"><input type="radio" name="estado" value="desgastado"><span>Desgastado</span></label>
+          </div>
+          <p class="field__error" id="estado-erro" role="alert"></p>
+        </fieldset>
+
+        <fieldset class="field" aria-describedby="oferta-erro">
+          <legend>O que você quer fazer com ele?</legend>
+          <div class="choices">
+            <label class="choice"><input type="radio" name="oferta" value="troca"><span>Trocar</span></label>
+            <label class="choice"><input type="radio" name="oferta" value="doacao"><span>Doar</span></label>
+            <label class="choice"><input type="radio" name="oferta" value="ambos"><span>Os dois</span></label>
+          </div>
+          <p class="field__error" id="oferta-erro" role="alert"></p>
+        </fieldset>
+
+        <div class="field">
+          <label for="observacao">Observação (opcional)</label>
+          <textarea id="observacao" name="observacao" maxlength="200" rows="3"
+                    placeholder="Ex.: tem uns grifos a lápis nas páginas finais" aria-describedby="observacao-erro"></textarea>
+          <p class="field__error" id="observacao-erro" role="alert"></p>
+        </div>
+
+        <button class="btn-gradient" type="submit" id="botao-salvar">Cadastrar livro</button>
+      </form>
+
+      <!-- Tela de sucesso: aparece no lugar do formulário -->
+      <div id="sucesso" hidden>
+        <div class="envelope envelope--ok" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg>
+        </div>
+        <h2 class="auth-done" id="sucesso-titulo" tabindex="-1">Livro cadastrado!</h2>
+        <p class="auth-lead" id="sucesso-texto"></p>
+        <button class="btn-gradient btn-gradient--link" type="button" id="outro-livro">Cadastrar outro livro</button>
+        <div class="auth-actions auth-actions--center">
+          <a class="link-button" href="index.html">Ir para o início</a>
+        </div>
+      </div>
+    </section>
+
+    <a class="auth-back" href="index.html">&larr; Voltar ao início</a>
+  </main>
+
+  <script src="js/vendor/supabase-js-2.118.0.js"></script>
+  <script src="js/supabase-config.js"></script>
+  <script src="js/livros.js"></script>
+</body>
+</html>
